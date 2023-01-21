@@ -43,6 +43,7 @@ static char fingerprint[FINGER_LEN + 1];
 int plugin_load(void *);
 static int finger_init(void *);
 static int finger_fini(void *);
+static int finger_unload(void *);
 
 static void get_finger(struct packet_object *po);
 static int good_target(struct ip_addr *ip, u_int16 *port);
@@ -64,6 +65,8 @@ struct plugin_ops finger_ops = {
    .init =              &finger_init,
    /* deactivation function */                     
    .fini =              &finger_fini,
+   /* clean-up function */
+   .unload =            &finger_unload,
 };
 
 /**********************************************************/
@@ -130,6 +133,14 @@ static int finger_fini(void *dummy)
    (void) dummy;
 
    return PLUGIN_FINISHED;
+}
+
+static int finger_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

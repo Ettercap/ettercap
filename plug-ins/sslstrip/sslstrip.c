@@ -158,6 +158,7 @@ static regex_t find_cookie_re;
 int plugin_load(void *);
 static int sslstrip_init(void *);
 static int sslstrip_fini(void *);
+static int sslstrip_unload(void *);
 static void sslstrip(struct packet_object *po);
 static int sslstrip_is_http(struct packet_object *po);
 
@@ -208,6 +209,7 @@ struct plugin_ops sslstrip_ops = {
    .version =      "1.2",
    .init =         &sslstrip_init,
    .fini =         &sslstrip_fini,
+   .unload =       &sslstrip_unload,
 };
 
 int plugin_load(void *handle)
@@ -348,6 +350,14 @@ static int sslstrip_fini(void *dummy)
    hook_del(HOOK_HANDLED, &sslstrip);
 
    return PLUGIN_FINISHED;
+}
+
+static int sslstrip_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 static int sslstrip_is_http(struct packet_object *po)

@@ -33,6 +33,7 @@
 int plugin_load(void *);
 static int repoison_arp_init(void *);
 static int repoison_arp_fini(void *);
+static int repoison_arp_unload(void *);
 static void repoison_func(struct packet_object *po);
 void repoison_victims(void *group_ptr, struct packet_object *po);
 
@@ -51,6 +52,8 @@ struct plugin_ops repoison_arp_ops = {
    .init =              &repoison_arp_init,
    /* deactivation function */                     
    .fini =              &repoison_arp_fini,
+   /* clean-up function */
+   .unload =            &repoison_arp_unload,
 };
 
 /**********************************************************/
@@ -93,6 +96,14 @@ static int repoison_arp_fini(void *dummy)
    hook_del(HOOK_PACKET_ARP_RP, &repoison_func);
 
    return PLUGIN_FINISHED;
+}
+
+static int repoison_arp_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

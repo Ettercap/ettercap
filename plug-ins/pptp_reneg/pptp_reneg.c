@@ -51,6 +51,7 @@ SLIST_HEAD(, call_list) call_table;
 int plugin_load(void *);
 static int pptp_reneg_init(void *);
 static int pptp_reneg_fini(void *);
+static int pptp_reneg_unload(void *);
 
 static void parse_ppp(struct packet_object *po);
 static int found_in_list(struct packet_object *po);
@@ -69,6 +70,8 @@ struct plugin_ops pptp_reneg_ops = {
    .init =              &pptp_reneg_init,
    /* deactivation function */                     
    .fini =              &pptp_reneg_fini,
+   /* clean-up function */
+   .unload =            &pptp_reneg_unload,
 };
 
 /**********************************************************/
@@ -119,6 +122,15 @@ static int pptp_reneg_fini(void *dummy)
 
    return PLUGIN_FINISHED;
 }
+
+static int pptp_reneg_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
+}
+
 
 /*********************************************************/
 

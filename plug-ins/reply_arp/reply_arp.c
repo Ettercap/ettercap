@@ -31,6 +31,7 @@
 int plugin_load(void *);
 static int reply_arp_init(void *);
 static int reply_arp_fini(void *);
+static int reply_arp_unload(void *);
 static void parse_arp(struct packet_object *po);
 
 /* plugin operations */
@@ -47,6 +48,8 @@ struct plugin_ops reply_arp_ops = {
    .init =              &reply_arp_init,
    /* deactivation function */                     
    .fini =              &reply_arp_fini,
+   /* clean-up function */
+   .unload =            &reply_arp_unload,
 };
 
 /**********************************************************/
@@ -86,6 +89,14 @@ static int reply_arp_fini(void *dummy)
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
 
    return PLUGIN_FINISHED;
+}
+
+static int reply_arp_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

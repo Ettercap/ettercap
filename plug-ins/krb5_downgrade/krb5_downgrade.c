@@ -65,6 +65,7 @@
 int plugin_load(void *);
 static int krb5_downgrade_init(void *);
 static int krb5_downgrade_fini(void *);
+static int krb5_downgrade_unload(void *);
 
 static void parse_krb5(struct packet_object *po);
 
@@ -83,6 +84,8 @@ struct plugin_ops krb5_downgrade_ops = {
    .init = &krb5_downgrade_init,
    /* deactivation function */
    .fini = &krb5_downgrade_fini,
+   /* clean-up function */
+   .unload = &krb5_downgrade_unload,
 };
 
 int plugin_load(void *handle)
@@ -117,6 +120,16 @@ static int krb5_downgrade_fini(void *dummy)
    hook_del(HOOK_PROTO_KRB5, &parse_krb5);
    return PLUGIN_FINISHED;
 }
+
+static int krb5_downgrade_unload(void *dummy)
+{
+   /* variable not used */
+   (void)dummy;
+
+   return PLUGIN_UNLOADED;
+}
+
+
 
 /* Downgrade the "etype" values present in AS-REQ request */
 static void parse_krb5(struct packet_object *po)

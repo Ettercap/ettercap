@@ -38,6 +38,7 @@ int plugin_load(void *);
 /* additional functions */
 static int dummy_init(void *);
 static int dummy_fini(void *);
+static int dummy_unload(void *);
 
 
 /* plugin operations */
@@ -55,6 +56,8 @@ struct plugin_ops dummy_ops = {
    .init =              &dummy_init,
    /* deactivation function */                     
    .fini =              &dummy_fini,
+   /* clean-up function */
+   .unload =            &dummy_unload,
 };
 
 /**********************************************************/
@@ -116,6 +119,24 @@ static int dummy_fini(void *dummy)
    USER_MSG("DUMMY: plugin finalization\n");
    return PLUGIN_FINISHED;
 }
+
+
+static int dummy_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   /*
+    * called during application shutdown.
+    * usually to free allocated memory during
+    * load function, init function or through
+    * the course of the plugin's lifetime
+    * but not free'd on purpose.
+    */
+   USER_MSG("DUMMY: plugin clean-up\n");
+   return PLUGIN_UNLOADED;
+}
+
 
 
 /* EOF */

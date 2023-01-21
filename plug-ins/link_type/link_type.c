@@ -43,8 +43,9 @@ static pthread_mutex_t link_type_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* protos */
 int plugin_load(void *);
 static int link_type_init(void *);
-static EC_THREAD_FUNC(link_type_thread);
 static int link_type_fini(void *);
+static int link_type_unload(void *);
+static EC_THREAD_FUNC(link_type_thread);
 static void parse_arp(struct packet_object *po);
 
 /* plugin operations */
@@ -62,6 +63,8 @@ struct plugin_ops link_type_ops = {
    .init =              &link_type_init,
    /* deactivation function */                     
    .fini =              &link_type_fini,
+   /* clean-up function */
+   .unload =            &link_type_unload,
 };
 
 /**********************************************************/
@@ -83,6 +86,31 @@ static int link_type_init(void *dummy)
          &link_type_thread, NULL);
 
    return PLUGIN_RUNNING;
+}
+
+static int link_type_fini(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   pthread_t pid;
+
+   pid = ec_thread_getpid("link_type");
+
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
+         ec_thread_destroy(pid);
+
+   INSTANT_USER_MSG("link_type: plugin terminated...\n");
+
+   return PLUGIN_FINISHED;
+}
+
+static int link_type_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 static EC_THREAD_FUNC(link_type_thread)
@@ -176,23 +204,6 @@ static EC_THREAD_FUNC(link_type_thread)
    return PLUGIN_FINISHED;
 }
 
-
-static int link_type_fini(void *dummy) 
-{
-   /* variable not used */
-   (void) dummy;
-
-   pthread_t pid;
-
-   pid = ec_thread_getpid("link_type");
-
-   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
-         ec_thread_destroy(pid);
-
-   INSTANT_USER_MSG("link_type: plugin terminated...\n");
-
-   return PLUGIN_FINISHED;
-}
 
 /*********************************************************/
 

@@ -34,6 +34,7 @@
 int plugin_load(void *);
 static int finger_submit_init(void *);
 static int finger_submit_fini(void *);
+static int finger_submit_unload(void *);
 
 
 /* plugin operations */
@@ -51,6 +52,8 @@ struct plugin_ops finger_submit_ops = {
    .init =              &finger_submit_init,
    /* deactivation function */                     
    .fini =              &finger_submit_fini,
+   /* clean-up function */
+   .unload =            &finger_submit_unload,
 };
 
 /**********************************************************/
@@ -130,6 +133,14 @@ static int finger_submit_fini(void *dummy)
    (void) dummy;
 
    return PLUGIN_FINISHED;
+}
+
+static int finger_submit_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 

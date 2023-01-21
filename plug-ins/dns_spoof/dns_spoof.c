@@ -95,6 +95,7 @@ static SLIST_HEAD(, rr_entry) additional_list;
 int plugin_load(void *);
 static int dns_spoof_init(void *);
 static int dns_spoof_fini(void *);
+static int dns_spoof_unload(void *);
 static int load_db(void);
 static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p, u_int32 *ttl_p);
 static void dns_spoof(struct packet_object *po);
@@ -124,6 +125,8 @@ struct plugin_ops dns_spoof_ops = {
    .init =              &dns_spoof_init,
    /* deactivation function */                     
    .fini =              &dns_spoof_fini,
+   /* clean-up function */
+   .unload =            &dns_spoof_unload,
 };
 
 /**********************************************************/
@@ -160,13 +163,25 @@ static int dns_spoof_init(void *dummy)
 
 static int dns_spoof_fini(void *dummy) 
 {
-   struct dns_spoof_entry *d;
-
    /* variable not used */
    (void) dummy;
 
    /* remove the hook */
    hook_del(HOOK_PROTO_DNS, &dns_spoof);
+
+   return PLUGIN_FINISHED;
+}
+
+
+/*
+ * unload database list
+ */
+static int dns_spoof_unload(void *dummy)
+{
+   struct dns_spoof_entry *d;
+
+   /* variable not used */
+   (void) dummy;
 
    /* Free dynamically allocated memory */
    while (!SLIST_EMPTY(&dns_spoof_head)) {
@@ -178,7 +193,7 @@ static int dns_spoof_fini(void *dummy)
    }
 
 
-   return PLUGIN_FINISHED;
+   return PLUGIN_UNLOADED;
 }
 
 

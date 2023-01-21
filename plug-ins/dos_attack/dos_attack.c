@@ -32,6 +32,7 @@
 int plugin_load(void *);
 static int dos_attack_init(void *);
 static int dos_attack_fini(void *);
+static int dos_attack_unload(void *);
 static void parse_arp(struct packet_object *po);
 
 #ifdef WITH_IPV6
@@ -65,6 +66,8 @@ struct plugin_ops dos_attack_ops = {
    .init =              &dos_attack_init,
    /* deactivation function */                     
    .fini =              &dos_attack_fini,
+   /* clean-up function */
+   .unload =            &dos_attack_unload,
 };
 
 /**********************************************************/
@@ -162,6 +165,14 @@ static int dos_attack_fini(void *dummy)
    INSTANT_USER_MSG("dos_attack: plugin terminated...\n");
 
    return PLUGIN_FINISHED;   
+}
+
+static int dos_attack_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

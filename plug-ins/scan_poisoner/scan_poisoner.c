@@ -40,8 +40,9 @@ static pthread_mutex_t scan_poisoner_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* protos */
 int plugin_load(void *);
 static int scan_poisoner_init(void *);
-static EC_THREAD_FUNC(scan_poisoner_thread);
 static int scan_poisoner_fini(void *);
+static int scan_poisoner_unload(void *);
+static EC_THREAD_FUNC(scan_poisoner_thread);
 static void parse_icmp(struct packet_object *po);
 
 /* plugin operations */
@@ -59,6 +60,8 @@ struct plugin_ops scan_poisoner_ops = {
    .init =              &scan_poisoner_init,
    /* deactivation function */                     
    .fini =              &scan_poisoner_fini,
+   /* clean-up function */
+   .unload =            &scan_poisoner_unload,
 };
 
 /**********************************************************/
@@ -80,6 +83,31 @@ static int scan_poisoner_init(void *dummy)
          &scan_poisoner_thread, NULL);
 
    return PLUGIN_RUNNING;
+}
+
+static int scan_poisoner_fini(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   pthread_t pid;
+
+   pid = ec_thread_getpid("scan_poisoner");
+
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
+         ec_thread_destroy(pid);
+
+   INSTANT_USER_MSG("scan_poisoner: plugin terminated...\n");
+
+   return PLUGIN_FINISHED;
+}
+
+static int scan_poisoner_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 static EC_THREAD_FUNC(scan_poisoner_thread)
@@ -154,23 +182,6 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    return PLUGIN_FINISHED;
 }
 
-
-static int scan_poisoner_fini(void *dummy) 
-{
-   /* variable not used */
-   (void) dummy;
-
-   pthread_t pid;
-
-   pid = ec_thread_getpid("scan_poisoner");
-
-   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
-         ec_thread_destroy(pid);
-
-   INSTANT_USER_MSG("scan_poisoner: plugin terminated...\n");
-
-   return PLUGIN_FINISHED;
-}
 
 /*********************************************************/
 

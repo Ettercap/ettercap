@@ -40,8 +40,9 @@ static pthread_mutex_t search_promisc_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* protos */
 int plugin_load(void *);
 static int search_promisc_init(void *);
-static EC_THREAD_FUNC(search_promisc_thread);
 static int search_promisc_fini(void *);
+static int search_promisc_unload(void *);
+static EC_THREAD_FUNC(search_promisc_thread);
 static void parse_arp(struct packet_object *po);
 
 /* plugin operations */
@@ -59,6 +60,8 @@ struct plugin_ops search_promisc_ops = {
    .init =              &search_promisc_init,
    /* deactivation function */                     
    .fini =              &search_promisc_fini,
+   /* clean-up function */
+   .unload =            &search_promisc_unload,
 };
 
 /**********************************************************/
@@ -80,6 +83,31 @@ static int search_promisc_init(void *dummy)
          &search_promisc_thread, NULL);
 
    return PLUGIN_RUNNING;
+}
+
+static int search_promisc_fini(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   pthread_t pid;
+
+   pid = ec_thread_getpid("search_promisc");
+
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
+         ec_thread_destroy(pid);
+
+   INSTANT_USER_MSG("search_promisc: plugin terminated...\n");
+
+   return PLUGIN_FINISHED;
+}
+
+static int search_promisc_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 static EC_THREAD_FUNC(search_promisc_thread)
@@ -166,23 +194,6 @@ static EC_THREAD_FUNC(search_promisc_thread)
    return PLUGIN_FINISHED;
 }
 
-
-static int search_promisc_fini(void *dummy) 
-{
-   /* variable not used */
-   (void) dummy;
-
-   pthread_t pid;
-
-   pid = ec_thread_getpid("search_promisc");
-
-   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
-         ec_thread_destroy(pid);
-
-   INSTANT_USER_MSG("search_promisc: plugin terminated...\n");
-
-   return PLUGIN_FINISHED;
-}
 
 /*********************************************************/
 

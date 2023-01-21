@@ -30,6 +30,7 @@
 int plugin_load(void *);
 static int autoadd_init(void *);
 static int autoadd_fini(void *);
+static int autoadd_unload(void *);
 
 static void parse_arp(struct packet_object *po);
 static int add_to_victims(void *group, struct packet_object *po);
@@ -49,6 +50,8 @@ struct plugin_ops autoadd_ops = {
    .init =              &autoadd_init,
    /* deactivation function */                     
    .fini =              &autoadd_fini,
+   /* clean-up function */
+   .unload =            &autoadd_unload,
 };
 
 /**********************************************************/
@@ -83,6 +86,14 @@ static int autoadd_fini(void *dummy)
 
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    return PLUGIN_FINISHED;
+}
+
+static int autoadd_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

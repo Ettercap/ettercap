@@ -49,6 +49,7 @@ struct ppp_lcp_header {
 int plugin_load(void *);
 static int pptp_clear_init(void *);
 static int pptp_clear_fini(void *);
+static int pptp_clear_unload(void *);
 
 static void parse_lcp(struct packet_object *po);
 static void parse_ecp(struct packet_object *po);
@@ -70,6 +71,8 @@ struct plugin_ops pptp_clear_ops = {
    .init =              &pptp_clear_init,
    /* deactivation function */                     
    .fini =              &pptp_clear_fini,
+   /* clean-up function */
+   .unload =            &pptp_clear_unload,
 };
 
 /**********************************************************/
@@ -113,6 +116,14 @@ static int pptp_clear_fini(void *dummy)
    hook_del(HOOK_PACKET_ECP, &parse_ecp);
    hook_del(HOOK_PACKET_IPCP, &parse_ipcp);
    return PLUGIN_FINISHED;
+}
+
+static int pptp_clear_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

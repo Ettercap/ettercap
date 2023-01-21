@@ -29,6 +29,7 @@
 int plugin_load(void *);
 static int find_conn_init(void *);
 static int find_conn_fini(void *);
+static int find_conn_unload(void *);
 
 static void parse_arp(struct packet_object *po);
 
@@ -47,6 +48,8 @@ struct plugin_ops find_conn_ops = {
    .init =              &find_conn_init,
    /* deactivation function */                     
    .fini =              &find_conn_fini,
+   /* clean-up function */
+   .unload =            &find_conn_unload,
 };
 
 /**********************************************************/
@@ -80,6 +83,14 @@ static int find_conn_fini(void *dummy)
 
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    return PLUGIN_FINISHED;
+}
+
+static int find_conn_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

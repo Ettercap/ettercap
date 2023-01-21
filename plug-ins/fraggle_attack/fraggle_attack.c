@@ -21,6 +21,7 @@
 int plugin_load(void *);
 static int fraggle_attack_init(void *);
 static int fraggle_attack_fini(void *);
+static int fraggle_attack_unload(void *);
 static EC_THREAD_FUNC(fraggler);
 
 /* globals */
@@ -31,6 +32,7 @@ struct plugin_ops fraggle_attack_ops = {
    .version =              "1.0",
    .init =                 &fraggle_attack_init,
    .fini =                 &fraggle_attack_fini,
+   .unload =               &fraggle_attack_unload,
 };
 
 
@@ -93,6 +95,14 @@ static int fraggle_attack_fini(void *dummy)
    }
 
    return PLUGIN_FINISHED;
+}
+
+static int fraggle_attack_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 static EC_THREAD_FUNC(fraggler)

@@ -31,6 +31,7 @@
 int plugin_load(void *);
 static int arp_cop_init(void *);
 static int arp_cop_fini(void *);
+static int arp_cop_unload(void *);
 
 static void parse_arp(struct packet_object *po);
 static void arp_init_list(void);
@@ -53,6 +54,8 @@ struct plugin_ops arp_cop_ops = {
    .init =              &arp_cop_init,
    /* deactivation function */                     
    .fini =              &arp_cop_fini,
+   /* clean-up function */
+   .unload =              &arp_cop_unload,
 };
 
 /**********************************************************/
@@ -92,6 +95,23 @@ static int arp_cop_fini(void *dummy)
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    hook_del(HOOK_PACKET_ARP_RP, &parse_arp);
    return PLUGIN_FINISHED;
+}
+
+static int arp_cop_unload(void *dummy)
+{
+   struct hosts_list *h;
+
+   /* variable not used */
+   (void) dummy;
+
+   /* free dynamically allocated memory */
+   while (!LIST_EMPTY(&arp_cop_table)) {
+      h = LIST_FIRST(&arp_cop_table);
+      LIST_REMOVE(h, next);
+      SAFE_FREE(h);
+   }
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

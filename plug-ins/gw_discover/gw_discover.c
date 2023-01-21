@@ -40,6 +40,7 @@ static u_int16 port;
 int plugin_load(void *);
 static int gw_discover_init(void *);
 static int gw_discover_fini(void *);
+static int gw_discover_unload(void *);
 
 static int get_remote_target(struct ip_addr *ip, u_int16 *port);
 static void do_discover(void);
@@ -60,6 +61,8 @@ struct plugin_ops gw_discover_ops = {
    .init =              &gw_discover_init,
    /* deactivation function */                     
    .fini =              &gw_discover_fini,
+   /* clean-up function */
+   .unload =            &gw_discover_unload,
 };
 
 /**********************************************************/
@@ -98,6 +101,14 @@ static int gw_discover_fini(void *dummy)
    (void) dummy;
 
    return PLUGIN_FINISHED;
+}
+
+static int gw_discover_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

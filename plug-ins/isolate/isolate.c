@@ -36,6 +36,7 @@ LIST_HEAD(, hosts_list) victims;
 int plugin_load(void *);
 static int isolate_init(void *);
 static int isolate_fini(void *);
+static int isolate_unload(void *);
 
 static void parse_arp(struct packet_object *po);
 static int add_to_victims(struct packet_object *po);
@@ -56,6 +57,8 @@ struct plugin_ops isolate_ops = {
    .init =              &isolate_init,
    /* deactivation function */                     
    .fini =              &isolate_fini,
+   /* clean-up function */
+   .unload =            &isolate_unload,
 };
 
 /**********************************************************/
@@ -120,6 +123,13 @@ static int isolate_fini(void *dummy)
    return PLUGIN_FINISHED;
 }
 
+static int isolate_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
+}
 /*********************************************************/
 
 /* Parse the arp packets */

@@ -34,6 +34,7 @@
 int plugin_load(void *);
 static int remote_browser_init(void *);
 static int remote_browser_fini(void *);
+static int remote_browser_unload(void *);
 static void remote_browser(struct packet_object *po);
 static int good_page(char *str);
 
@@ -52,6 +53,8 @@ struct plugin_ops remote_browser_ops = {
    .init =              &remote_browser_init,
    /* deactivation function */                     
    .fini =              &remote_browser_fini,
+   /* clean-up function */
+   .unload =            &remote_browser_unload,
 };
 
 /**********************************************************/
@@ -87,6 +90,14 @@ static int remote_browser_fini(void *dummy)
    hook_del(HOOK_PROTO_HTTP, &remote_browser);
 
    return PLUGIN_FINISHED;
+}
+
+static int remote_browser_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /* 

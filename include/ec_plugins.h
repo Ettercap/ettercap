@@ -14,6 +14,7 @@ struct plugin_ops
    char *version;                   /* the plugin version. note: 15 will be displayed as 1.5 */
    int (*init)(void *);          /* activation function */
    int (*fini)(void *);          /* deactivation function */
+   int (*unload)(void *);          /* clean-up function */
 };
 
 struct plugin_list
@@ -44,6 +45,7 @@ EC_API_EXTERN int plugin_init(char *name);
 EC_API_EXTERN int plugin_fini(char *name);
 EC_API_EXTERN int plugin_kill_thread(char *name, char *thread);
 
+#define PLUGIN_UNLOADED -1
 #define PLUGIN_FINISHED 0
 #define PLUGIN_RUNNING  1
 

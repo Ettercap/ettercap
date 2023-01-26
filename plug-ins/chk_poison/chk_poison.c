@@ -51,6 +51,7 @@ static pthread_mutex_t poison_mutex = PTHREAD_MUTEX_INITIALIZER;
 int plugin_load(void *);
 static int chk_poison_init(void *);
 static int chk_poison_fini(void *);
+static int chk_poison_unload(void *);
 static void parse_icmp(struct packet_object *po);
 
 /* plugin operations */
@@ -68,6 +69,8 @@ struct plugin_ops chk_poison_ops = {
    .init =              &chk_poison_init,
    /* deactivation function */                     
    .fini =              &chk_poison_fini,
+   /* clean-up function */
+   .unload =            &chk_poison_unload,
 };
 
 /**********************************************************/
@@ -181,6 +184,14 @@ static int chk_poison_fini(void *dummy)
    (void) dummy;
 
    return PLUGIN_FINISHED;
+}
+
+static int chk_poison_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

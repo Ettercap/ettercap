@@ -59,6 +59,7 @@ static SLIST_HEAD(, mdns_spoof_entry) mdns_spoof_head;
 int plugin_load(void *);
 static int mdns_spoof_init(void *);
 static int mdns_spoof_fini(void *);
+static int mdns_spoof_unload(void *);
 static int load_db(void);
 static void mdns_spoof(struct packet_object *po);
 static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p);
@@ -85,6 +86,8 @@ struct plugin_ops mdns_spoof_ops = {
    .init =              &mdns_spoof_init,
    /* deactivation function */                     
    .fini =              &mdns_spoof_fini,
+   /* clean-up function */
+   .unload =            &mdns_spoof_unload,
 };
 
 /* this function is called on plugin load */
@@ -125,6 +128,29 @@ static int mdns_spoof_fini(void *dummy)
 
    return PLUGIN_FINISHED;
 }
+
+
+/*
+ * unload database list
+ */
+static int mdns_spoof_unload(void *dummy)
+{
+   struct mdns_spoof_entry *d;
+
+   /* variable not used */
+   (void) dummy;
+
+   /* Free dynamically allocated memory */
+   while (!SLIST_EMPTY(&mdns_spoof_head)) {
+      d = SLIST_FIRST(&mdns_spoof_head);
+      SLIST_REMOVE_HEAD(&mdns_spoof_head, next);
+      SAFE_FREE(d->name);
+      SAFE_FREE(d);
+   }
+
+   return PLUGIN_UNLOADED;
+}
+
 
 /*
  * load the database in the list 

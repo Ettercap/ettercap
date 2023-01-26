@@ -137,7 +137,7 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -fno-common -Wall -Wno-pointer-sign 
 ## append ASAN build flags if compiler version has support
 #if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 #   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)
-#      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address
+#      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address \
 #         -fno-omit-frame-pointer" CACHE STRING "" FORCE)
 #      message("Building with ASAN support (GNU compiler)")
 #   else()
@@ -145,7 +145,7 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -fno-common -Wall -Wno-pointer-sign 
 #   endif()
 #elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 #   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)
-#      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address
+#      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address \
 #         -fno-omit-frame-pointer" CACHE STRING "" FORCE)
 #      message("Building with ASAN support (Clang compiler)")
 #   elseif(CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)

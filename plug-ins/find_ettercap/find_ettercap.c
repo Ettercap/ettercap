@@ -35,6 +35,7 @@
 int plugin_load(void *);
 static int find_ettercap_init(void *);
 static int find_ettercap_fini(void *);
+static int find_ettercap_unload(void *);
 static void parse_ip(struct packet_object *po);
 static void parse_icmp(struct packet_object *po);
 static void parse_tcp(struct packet_object *po);
@@ -54,6 +55,8 @@ struct plugin_ops find_ettercap_ops = {
    .init =              &find_ettercap_init,
    /* deactivation function */                     
    .fini =              &find_ettercap_fini,
+   /* clean-up function */
+   .unload =            &find_ettercap_unload,
 };
 
 /**********************************************************/
@@ -91,6 +94,14 @@ static int find_ettercap_fini(void *dummy)
    hook_del(HOOK_PACKET_TCP, &parse_tcp);
 
    return PLUGIN_FINISHED;
+}
+
+static int find_ettercap_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /* 

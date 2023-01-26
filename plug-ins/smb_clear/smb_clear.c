@@ -47,6 +47,7 @@ typedef struct {
 int plugin_load(void *);
 static int smb_clear_init(void *);
 static int smb_clear_fini(void *);
+static int smb_clear_unload(void *);
 
 static void parse_smb(struct packet_object *po);
 
@@ -65,6 +66,8 @@ struct plugin_ops smb_clear_ops = {
    .init =              &smb_clear_init,
    /* deactivation function */                     
    .fini =              &smb_clear_fini,
+   /* clean-up function */
+   .unload =            &smb_clear_unload,
 };
 
 /**********************************************************/
@@ -104,6 +107,14 @@ static int smb_clear_fini(void *dummy)
 
    hook_del(HOOK_PROTO_SMB, &parse_smb);
    return PLUGIN_FINISHED;
+}
+
+static int smb_clear_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

@@ -61,6 +61,7 @@ char fake_pck[FAKE_PCK_LEN];
 int plugin_load(void *);
 static int rand_flood_init(void *);
 static int rand_flood_fini(void *);
+static int rand_flood_unload(void *);
 EC_THREAD_FUNC(flooder);
 
 
@@ -79,6 +80,8 @@ struct plugin_ops rand_flood_ops = {
    .init =              &rand_flood_init,
    /* deactivation function */                     
    .fini =              &rand_flood_fini,
+   /* clean-up function */
+   .unload =            &rand_flood_unload,
 };
 
 /**********************************************************/
@@ -128,6 +131,15 @@ static int rand_flood_fini(void *dummy)
 
    return PLUGIN_FINISHED;
 }
+
+static int rand_flood_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
+}
+
 
 
 EC_THREAD_FUNC(flooder)

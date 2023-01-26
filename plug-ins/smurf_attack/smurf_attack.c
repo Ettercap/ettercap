@@ -16,6 +16,7 @@
 int plugin_load(void *);
 static int smurf_attack_init(void *);
 static int smurf_attack_fini(void *);
+static int smurf_attack_unload(void *);
 static EC_THREAD_FUNC(smurfer);
 
 /* globals */
@@ -27,6 +28,7 @@ struct plugin_ops smurf_attack_ops = {
    .version =              "1.0",
    .init =                 &smurf_attack_init,
    .fini =                 &smurf_attack_fini,
+   .unload =               &smurf_attack_unload,
 };
 
 /* teh c0d3 */
@@ -90,6 +92,14 @@ static int smurf_attack_fini(void *dummy)
    }
 
    return PLUGIN_FINISHED;
+}
+
+static int smurf_attack_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 static EC_THREAD_FUNC(smurfer)

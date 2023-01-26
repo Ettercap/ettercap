@@ -82,6 +82,7 @@ struct ip_addr fake_ip;
 int plugin_load(void *);
 static int gre_relay_init(void *);
 static int gre_relay_fini(void *);
+static int gre_relay_unload(void *);
 
 static void parse_gre(struct packet_object *po);
 static void parse_arp(struct packet_object *po);
@@ -104,6 +105,8 @@ struct plugin_ops gre_relay_ops = {
    .init =              &gre_relay_init,
    /* deactivation function */                     
    .fini =              &gre_relay_fini,
+   /* clean-up function */
+   .unload =            &gre_relay_unload,
 };
 
 /**********************************************************/
@@ -168,6 +171,15 @@ static int gre_relay_fini(void *dummy)
 #endif
 
    return PLUGIN_FINISHED;
+}
+
+
+static int gre_relay_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

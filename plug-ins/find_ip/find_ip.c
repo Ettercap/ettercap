@@ -28,6 +28,7 @@
 int plugin_load(void *);
 static int find_ip_init(void *);
 static int find_ip_fini(void *);
+static int find_ip_unload(void *);
 static int in_list(struct ip_addr *scanip);
 static struct ip_addr *search_netmask(void);
 static struct ip_addr *search_targets(void);
@@ -47,6 +48,8 @@ struct plugin_ops find_ip_ops = {
    .init =              &find_ip_init,
    /* deactivation function */                     
    .fini =              &find_ip_fini,
+   /* clean-up function */
+   .unload =            &find_ip_unload,
 };
 
 /**********************************************************/
@@ -99,6 +102,14 @@ static int find_ip_fini(void *dummy)
    (void) dummy;
 
    return PLUGIN_FINISHED;
+}
+
+static int find_ip_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 /*********************************************************/

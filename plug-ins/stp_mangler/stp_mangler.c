@@ -70,6 +70,7 @@ char fake_pck[FAKE_PCK_LEN];
 int plugin_load(void *);
 static int stp_mangler_init(void *);
 static int stp_mangler_fini(void *);
+static int stp_mangler_unload(void *);
 EC_THREAD_FUNC(mangler);
 
 
@@ -88,6 +89,8 @@ struct plugin_ops stp_mangler_ops = {
    .init =              &stp_mangler_init,
    /* deactivation function */                     
    .fini =              &stp_mangler_fini,
+   /* clean-up function */
+   .unload =            &stp_mangler_unload,
 };
 
 /**********************************************************/
@@ -136,6 +139,15 @@ static int stp_mangler_fini(void *dummy)
    INSTANT_USER_MSG("stp_mangler: plugin stopped...\n");
 
    return PLUGIN_FINISHED;
+}
+
+
+static int stp_mangler_unload(void *dummy)
+{
+   /* variable not used */
+   (void) dummy;
+
+   return PLUGIN_UNLOADED;
 }
 
 

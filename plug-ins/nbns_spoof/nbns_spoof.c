@@ -173,6 +173,7 @@ typedef struct {
 int plugin_load(void *);
 static int nbns_spoof_init(void *);
 static int nbns_spoof_fini(void *);
+static int nbns_spoof_unload(void *);
 static int load_db(void);
 static void nbns_spoof(struct packet_object *po);
 static void nbns_set_challenge(struct packet_object *po);
@@ -190,6 +191,7 @@ struct plugin_ops nbns_spoof_ops = {
 	.version = 			"1.1",
 	.init = 			&nbns_spoof_init,
 	.fini = 			&nbns_spoof_fini,	
+	.unload =			&nbns_spoof_unload,
 };
 
 int plugin_load(void *handle)
@@ -223,6 +225,27 @@ static int nbns_spoof_fini(void *dummy)
 
 	hook_del(HOOK_PROTO_NBNS, &nbns_spoof);
 	return PLUGIN_FINISHED;
+}
+
+/*
+ * unload databsae list
+ */
+static int nbns_spoof_unload(void *dummy)
+{
+   struct nbns_spoof_entry *d;
+
+   /* variable not used */
+   (void) dummy;
+
+   /* Free dynamically allocated memory */
+   while (!SLIST_EMPTY(&nbns_spoof_head)) {
+      d = SLIST_FIRST(&nbns_spoof_head);
+      SLIST_REMOVE_HEAD(&nbns_spoof_head, next);
+      SAFE_FREE(d->name);
+      SAFE_FREE(d);
+   }
+
+	return PLUGIN_UNLOADED;
 }
 
 /* load database */

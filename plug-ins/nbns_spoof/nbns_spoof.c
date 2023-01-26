@@ -191,7 +191,7 @@ struct plugin_ops nbns_spoof_ops = {
 	.version = 			"1.1",
 	.init = 			&nbns_spoof_init,
 	.fini = 			&nbns_spoof_fini,	
-	.unload = 		&nbns_spoof_unload,
+	.unload =			&nbns_spoof_unload,
 };
 
 int plugin_load(void *handle)

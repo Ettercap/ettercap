@@ -3,6 +3,8 @@ project(ettercap C)
 
 set(VERSION "0.8.4-rc")
 
+include(GNUInstallDirs)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
 
@@ -107,23 +109,23 @@ include(EttercapLibCheck)
 include(EttercapVariableCheck)
 
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")
-set(INSTALL_SYSCONFDIR /etc CACHE PATH "System configuration directory")
-set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH "Library installation directory")
-set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
-set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
-set(INSTALL_BINDIR  ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
+set(INSTALL_SYSCONFDIR ${CMAKE_INSTALL_FULL_SYSCONFDIR} CACHE PATH "System configuration directory")
+set(INSTALL_LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR} CACHE PATH "Library installation directory")
+set(INSTALL_DATADIR ${CMAKE_INSTALL_FULL_DATADIR} CACHE PATH "Data installation directory")
+set(INSTALL_EXECPREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "")
+set(INSTALL_BINDIR  ${CMAKE_INSTALL_FULL_BINDIR} CACHE PATH "Binary files installation directory")
 if(OS_DARWIN OR OS_BSD_FREE OR OS_WINDOWS)
-  set(INSTALL_SYSCONFDIR ${INSTALL_PREFIX}/etc CACHE PATH "System configuration directory")
-  set(POLKIT_DIR ${INSTALL_PREFIX}/share/polkit-1/actions/ CACHE PATH "Polkit installation directory")
+  set(INSTALL_SYSCONFDIR ${CMAKE_INSTALL_PREFIX}/etc CACHE PATH "System configuration directory")
+  set(POLKIT_DIR ${CMAKE_INSTALL_FULL_DATADIR}/polkit-1/actions/ CACHE PATH "Polkit installation directory")
 else()
 #at least on ubuntu, polkit dir couldn't be /usr/local/share, but should be /usr/share
   set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Polkit installation directory")
 endif()
 set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
-set(DESKTOP_DIR ${INSTALL_PREFIX}/share/applications/ CACHE PATH "Desktop file installation directory")
-set(METAINFO_DIR ${INSTALL_PREFIX}/share/metainfo/ CACHE PATH "Metainfo file installation directory")
-set(ICON_DIR ${INSTALL_PREFIX}/share/icons/hicolor CACHE PATH "XDG hicolor icon theme installation directory")
-set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages")
+set(DESKTOP_DIR ${CMAKE_INSTALL_FULL_DATADIR}/applications/ CACHE PATH "Desktop file installation directory")
+set(METAINFO_DIR ${CMAKE_INSTALL_FULL_DATADIR}/metainfo/ CACHE PATH "Metainfo file installation directory")
+set(ICON_DIR ${CMAKE_INSTALL_FULL_DATADIR}/icons/hicolor CACHE PATH "XDG hicolor icon theme installation directory")
+set(MAN_INSTALLDIR ${CMAKE_INSTALL_FULL_MANDIR} CACHE PATH "Path for manual pages")
 
 if(NOT DISABLE_RPATH)
   # Ensure that, when we link to stuff outside of our build path, we include the

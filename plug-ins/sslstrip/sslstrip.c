@@ -241,7 +241,7 @@ static int sslstrip_init(void *dummy)
    }
 
 #ifdef HAVE_PCRE2
-   https_url_pcre = pcre2_compile(URL_PATTERN, PCRE2_ZERO_TERMINATED, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
+   https_url_pcre = pcre2_compile(URL_PATTERN, PCRE2_ZERO_TERMINATED, PCRE2_MULTILINE|PCRE2_CASELESS, &error, &erroroffset, NULL);
 #else
    https_url_pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
 #endif

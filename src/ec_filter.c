@@ -1544,7 +1544,7 @@ static int compile_regex(struct filter_env *fenv)
 
                /* prepare the regex (with default option) */
                fop[i].op.func.ropt->pregex = pcre2_compile(fop[i].op.func.string, PCRE2_ZERO_TERMINATED,
-                     PCRE_MULTILINE|PCRE_CASELESS, &perrbuf, &err, NULL );
+                     0, &perrbuf, &err, NULL );
                if (fop[i].op.func.ropt->pregex == NULL)
                {
                   PCRE2_UCHAR buffer[256];

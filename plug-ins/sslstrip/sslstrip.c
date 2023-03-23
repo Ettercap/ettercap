@@ -51,7 +51,7 @@
 
 #include <curl/curl.h>
 
-#if (LIBCURL_VERSION_MAJOR < 7) || (LIBCURL_VERSION_MINOR < 26)
+#if (LIBCURL_VERSION_MAJOR < 7) || (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR < 26)
 #error libcurl 7.26.0 or up is needed
 #endif
 

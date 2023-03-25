@@ -21,12 +21,18 @@
 #if !defined (__USE_GNU)   /* for memmem(), strsignal(), etc etc... */
    #define __USE_GNU
 #endif
+#if !defined (_GNU_SOURCE) /* for memmem(), strsignal(), etc etc... on musl */
+   #define _GNU_SOURCE
+#endif
 #ifdef OS_SOLARIS
    #define _REENTRANT      /* for strtok_r() */
 #endif
 #include <string.h>
 #if defined (__USE_GNU)
    #undef __USE_GNU
+#endif
+#if defined (_GNU_SOURCE)
+   #undef _GNU_SOURCE
 #endif
 #include <strings.h>
 #include <unistd.h>

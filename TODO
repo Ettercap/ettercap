@@ -17,6 +17,10 @@
   In the next release(s)
 ============================
 
+   + New bundled libnet version 1.3
+
+   + Make code compatible to OpenSSL version 3.x
+
    + Host impersonation (issue #31)
 
    + RDP MITM feature (issue #32)

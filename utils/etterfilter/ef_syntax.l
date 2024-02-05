@@ -41,7 +41,7 @@
 %option  noinput
 
 OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
-FUNCTION       [a-z_]+\([^)]+\)
+FUNCTION       [a-z_]+\([^)]*\)
 CONST          [0-9]+|0x[0-9a-fA-F]+|[A-Z6]+
 STRING         \"([^\0"\\]*(\\.[^\0"\\]*)*)\"
 IPADDR         \'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\'

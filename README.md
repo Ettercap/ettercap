@@ -1,142 +1,119 @@
-==============================================================================
-==============================================================================
+![banner](share/ettercap.png)
 
 
-       @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@
-       @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
-       @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
-       @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
-       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     
+<div align="center">
 
-                   A suite for man in the middle attacks
+# A suite for man in the middle attacks
+**Copyright 2001-Current The Ettercap Dev Team**
 
-                 Copyright 2001-2019 The Ettercap Dev Team
+</div>
 
-==============================================================================
-==============================================================================
+## INTRODUCTION
 
-Aoccdrnig to rscheearch at an Elingsh uinervtisy, it deosn't mttaer in waht
+Ettercap is a comprehensive suite for man in the middle attacks.
+It features sniffing of live connections, content filtering on the fly and many other interesting tricks.
+It supports active and passive dissection of many protocols and includes many features for network and host analysis.
+
+> [!NOTE]
+> Aoccdrnig to rscheearch at an Elingsh uinervtisy, it deosn't mttaer in waht
 oredr the ltteers in a wrod are, the olny iprmoetnt tihng is taht the frist
 and lsat ltteer are in the rghit pclae. The rset can be a toatl mses  and
 you can sitll raed it wouthit a porbelm. Tihs is bcuseae we do not raed
 ervey lteter by it slef but the wrod as a wlohe and the biran fguiers it
 out aynawy.
+>
+> **... so please excuse us for every typo in the documentation, man pages or 
+code, btw fixes and patches are welcome.**
 
-... so please excuse us for every typo in the documentation, man pages or 
-code, btw fixes and patches are welcome.
+## REQUIRED PROGRAMS
 
-==============================================================================
+- C compiler
+- flex (or other lex-compatible parser generator) for *.l files
+- bison (or other yacc-compatible parser generator) for *.y files
+- cmake (build tool)
 
+## REQUIRED LIBRARIES
 
-==============================================================================
-                     R E Q U I R E D   P R O G R A M S
-==============================================================================
+### MANDATORY:
+- libpcap >= 0.8.1
+- libnet  >= 1.1.2.1 (>= 1.1.5 for IPv6 support)
+- openssl >= 0.9.7
+- libpthread
+- zlib
+- libmaxminddb (successor of libgeoip)
+- CMake 2.8
+- Curl >= 7.26.0 to build SSLStrip plugin
 
-C compiler
+> [!TIP]
+> If you don't want to enable SSLStrip plugin you have to disable it.
+    (more information about disabling a plugin in the [README.GIT](README.GIT) file)
 
-flex (or other lex-compatible parser generator) for *.l files
+### OPTIONAL:
+- To avoid use of our internal strlcat and strlcpy implementation: `libbsd`
+- To enable PDF documentation generation (enable via ENABLE_PDF_DOCS=On): `groff`
+- To enable plugins: `libltdl` (part of libtool)
+- To have perl regexp in the filters: `libpcre`
+- For the cursed GUI: `ncurses` >= 5.3
+- For the GTK+ GUI:
+  - `Glib`      >= 2.2.2
+  - `Gtk+3`    >= 3.12.0 (recommended >= 3.22.0)
+  - `Atk`       >= 1.2.4
+  - `Pango`     >= 1.2.3
 
-bison (or other yacc-compatible parser generator) for *.y files
-
-cmake (build tool)
-
-==============================================================================
-                     R E Q U I R E D   L I B R A R I E S
-==============================================================================
-
-MANDATORY:
-
-   - libpcap >= 0.8.1
-   - libnet  >= 1.1.2.1 (>= 1.1.5 for IPv6 support)
-   - openssl >= 0.9.7
-   - libpthread
-   - zlib
-   - libmaxminddb (successor of libgeoip)
-   - CMake 2.8
-   - Curl    >= 7.26.0 to build SSLStrip plugin
-   If you don't want to enable SSLStrip plugin you have to disable it.
-    (more information about disabling a plugin in the README.GIT file)
-
-OPTIONAL:
-   To avoid use of our internal strlcat and strlcpy implementation:
-      - libbsd
-
-   To enable PDF documentation generation (enable via ENABLE_PDF_DOCS=On):
-      - groff
-
-   To enable plugins:
-      - libltdl (part of libtool)
-
-   To have perl regexp in the filters:
-      - libpcre
-
-   For the cursed GUI:
-      - ncurses   >= 5.3
-
-   For the GTK+ GUI:
-      - Glib      >= 2.2.2
-      - Gtk+3     >= 3.12.0 (recommended >= 3.22.0)
-      - Atk       >= 1.2.4
-      - Pango     >= 1.2.3
-
-If you are running on debian, or any debian based distro you can install
+> [!TIP]
+> If you are running on debian, or any debian based distro you can install
 the required dependencies by running:
+>
+> ```
+> apt-get install build-essential debhelper bison check cmake flex groff libbsd-dev \
+>      libcurl4-openssl-dev libmaxminddb-dev libgtk-3-dev libltdl-dev libluajit-5.1-dev \
+>      libncurses5-dev libnet1-dev libpcap-dev libpcre2-dev libssl-dev
+> ```
 
-apt-get install build-essential debhelper bison check cmake flex groff libbsd-dev \
-      libcurl4-openssl-dev libmaxminddb-dev libgtk-3-dev libltdl-dev libluajit-5.1-dev \
-      libncurses5-dev libnet1-dev libpcap-dev libpcre2-dev libssl-dev
+## LICENSE
 
-============================================================================
-                                   LICENSE
-============================================================================
+see [LICENSE](LICENSE) file for details...
 
-   see LICENSE file for details...
+## AUTHORS
+- Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+- Marco Valleri (NaGA) <naga@antifork.org>
+- Emilio Escobar (exfil) <eescobar@gmail.com>
+- Eric Milam (J0hnnyBrav0) <brax.hax@gmail.com>
+- Gianfranco Costamagna (LocutusOfBorg) <costamagnagianfranco@yahoo.it>
+- Alexander Koeppe (koeppea) <format_c AT online DOT de>
 
-============================================================================
-                                   AUTHORS
-============================================================================
+## INSTALLATION
 
-   Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+The easiest way to compile ettercap is in the form:
 
-   Marco Valleri (NaGA) <naga@antifork.org>
+```
+mkdir build && cd build
+```
 
-   Emilio Escobar (exfil) <eescobar@gmail.com>
-  
-   Eric Milam (J0hnnyBrav0) <brax.hax@gmail.com>
+```
+cmake ..
+```
 
-   Gianfranco Costamagna (LocutusOfBorg) <costamagnagianfranco@yahoo.it>
+> [!TIP]
+> Use `ccmake .` to change options such as disabling IPv6 support, add plugins support, etc).
 
-   Alexander Koeppe (koeppea) <format_c AT online DOT de>
+```
+sudo make install
+```
 
-============================================================================
-                                INSTALLATION
-============================================================================
+> [!NOTE]
+> Read [INSTALL](INSTALL) for further details... and [README.PLATFORMS](README.PLATFORMS) for any issue regarding your operating system.
 
- The easiest way to compile ettercap is in the form:
-    mkdir build
-    cd build
-    cmake ..
-    (Use ccmake . to change options such as disabling IPv6 support, add
-    plugins support, etc).
-    sudo make install
+## HOW TO USE IT
 
- read INSTALL for further details... and README.PLATFORMS for any issue
- regarding your operating system.
- 
-============================================================================
-                                HOW TO USE IT
-============================================================================
+ You can choose between 3 User Interfaces: `Text mode`, `Curses`, `GTK`.
 
- You can choose between 3 User Interfaces: Text mode, Curses, GTK.
-
- Please read the man pages ettercap(8) and ettercap_curses(8) to learn how 
+ Please read the man pages `ettercap(8)` and `ettercap_curses(8)` to learn how 
  to use ettercap.
 
-============================================================================
-                               TECHNICAL PAPER
-============================================================================
+## TECHNICAL PAPER
 
-THE HOST LIST
+### THE HOST LIST
 
  Sending one ARP REQUEST for each ip in the lan (looking at the current ip
  and netmask), it is possible to get the ARP REPLIES and then make the
@@ -148,7 +125,7 @@ THE HOST LIST
  requests is 1 millisecond, can be configured in etter.conf)
 
 
-UNIFIED SNIFFING
+### UNIFIED SNIFFING
 
  Ettercap NG uses the unified sniffing method which is the base for all the
  attacks. The kernel ip forwarding is always disabled and this task is
@@ -160,7 +137,7 @@ UNIFIED SNIFFING
  host and the game is over ;)
 
 
-BRIDGED SNIFFING
+### BRIDGED SNIFFING
 
  Uses two network interfaces and forwards the traffic between them while performing
  sniffing and content filtrating. This sniffing method is very stealthy as there
@@ -171,7 +148,7 @@ BRIDGED SNIFFING
  This way ettercap will work as an inline IPS ;)
 
 
-ARP POISONING ATTACK
+### ARP POISONING ATTACK
 
  When you select this method, ettercap will poison the arp cache of the
  two hosts, identifying itself as the other host respectively (see the
@@ -186,6 +163,7 @@ ARP POISONING ATTACK
  That is how we discover if there are others poisoning the arp cache
  in our LAN, thus being warned, that our traffic is under control! =)
 
+```
      HOST 1  - - - - - - - - - - - - - - - - - - - -> HOST 2
    (poisoned)                                      (poisoned)
        |                                               ^
@@ -196,7 +174,7 @@ ARP POISONING ATTACK
  Legenda:
              - - - ->   the logic connection
              ------->   the real one
-
+```
 
  The arp protocol has an intrinsic insecurity. In order to reduce the
  traffic on the cable, it will insert an entry in the arp cache even if it
@@ -234,21 +212,24 @@ ARP POISONING ATTACK
 
    simple, isn't it ?
 
- *** LINUX KERNEL 2.4.x ISSUE ***
+ **LINUX KERNEL 2.4.x ISSUE**
 
  In the latest release of the linux kernel we can find in :
- /usr/src/linux/net/ipv4/arp.c
+ `/usr/src/linux/net/ipv4/arp.c`
 
+```
  /* Unsolicited ARP is not accepted by default.
     It is possible, that this option should be enabled for some
     devices (strip is candidate)
  */
+```
 
  these kernels use a special neighbor system to prevent unsolicited arp
  replies (what ettercap sends to the victim).
  Good gracious, is ettercap unusable with that kernel ? the answer is NO !
  let's view why... in the same source code we find:
 
+```
  /*
  *  Process entry.  The idea here is we want to send a reply if it is a
  *  request for us or if it is a request for someone else that we hold
@@ -265,6 +246,7 @@ ARP POISONING ATTACK
  *  and in the case of requests for us we add the requester to the arp
  *  cache.
  */
+```
 
  so, if the kernel receives a REQUEST it will cache the host...
  what does that mean ? if ettercap sends spoofed REQUESTS instead of
@@ -275,7 +257,7 @@ ARP POISONING ATTACK
  have this "feature"...
 
 
- *** SOLARIS ISSUE ***
+ **SOLARIS ISSUE**
 
  Solaris will not cache a reply if it isn't already in the cache.
  The trick is simple, before poisoning, ettercap sends a spoofed ICMP
@@ -284,7 +266,7 @@ ARP POISONING ATTACK
  entry is now in the cache...
 
 
-ICMP REDIRECTION
+### ICMP REDIRECTION
 
  This attack implements ICMP redirection. It sends a spoofed icmp redirect
  message to the hosts in the lan pretending to be a best route for internet. 
@@ -294,7 +276,7 @@ ICMP REDIRECTION
  messages for a directly connected network. 
 
 
-DHCP SPOOFING
+### DHCP SPOOFING
 
  This attack implements DHCP spoofing. It pretends to be a DHCP server and try
  to win the race condition with the real one to force the client to accept
@@ -303,7 +285,7 @@ DHCP SPOOFING
  The resulting attack is an HALF-DUPLEX mitm. 
 
 
-PORT STEALING
+### PORT STEALING
 
  This technique is useful to sniff in a switched environment when ARP poisoning
  is not effective (for example where static mapped ARPs are used).
@@ -320,7 +302,7 @@ PORT STEALING
  Now we can re-start the flooding process waiting for new packets.
 
 
-CHARACTERS INJECTION
+### CHARACTERS INJECTION
 
  We have stated that the packets are for us...
  And the packets will not be received by destination until we forward them.
@@ -337,16 +319,16 @@ CHARACTERS INJECTION
  correct, after program exit, the connection must be RESET or all future
  traffic would be rejected, blocking the source workstation network).
 
- NOTE: Injector supports escape sequences. you can make multi-line injection
-       eg: "this on line one \n this on line two \n and so on..."
-       eg: "this in hex mode: \x65\x6c\x6c\x65"
-       eg: "this in oct mode: \101\108\108\101"
+> [!NOTE]
+> Injector supports escape sequences. you can make multi-line injection
+>  - eg: "this on line one \n this on line two \n and so on..."
+>  - eg: "this in hex mode: \x65\x6c\x6c\x65"
+>  - eg: "this in oct mode: \101\108\108\101"
 
- NOTE: remember to terminate your injection with \r\n if you want to inject
-       command to the server.
+> [!NOTE]
+> remember to terminate your injection with \r\n if you want to inject command to the server.
 
-
-SSH1 MAN-IN-THE-MIDDLE
+### SSH1 MAN-IN-THE-MIDDLE
 
  When the connection starts (remember that we are the master-of-packets, all
  packets go through ettercap) we substitute the server public key with one
@@ -363,7 +345,7 @@ SSH1 MAN-IN-THE-MIDDLE
  ettercap is only a spectator... ;)
 
 
-PACKET FILTERING
+### PACKET FILTERING
 
  Like character injection, we can modify the packets payload and replace
  the right sequence and acknowledgement number if needed.
@@ -373,7 +355,7 @@ PACKET FILTERING
  with etterfilter(8) in order to be used by ettercap.
  
 
-PASSIVE SCANNING OF THE LAN
+### PASSIVE SCANNING OF THE LAN
 
  This feature is very useful if you want to know the topology of the lan but
  you don't want to send any packet on it. In this way the scan is done entirely
@@ -388,7 +370,7 @@ PASSIVE SCANNING OF THE LAN
  the hosts in the lan.
 
 
-PASSIVE OS FINGERPRINT
+### PASSIVE OS FINGERPRINT
 
  The main idea is to analyze the passive information coming from a host
  when it makes or receives connections with other hosts. This information
@@ -429,7 +411,7 @@ PASSIVE OS FINGERPRINT
  in the database.
 
 
-OPEN PORTS
+### OPEN PORTS
 
  Open ports are identified by looking for SYN+ACK packets.
  If a SYN+ACK comes from a port, it is for sure open, except for the
@@ -442,7 +424,7 @@ OPEN PORTS
  sends packet to a server.
 
 
-GATEWAY AND ROUTERS
+### GATEWAY AND ROUTERS
 
  The gateway is simply recognized looking at IP packet with a non local ip
  ( checking the netmask ). If a non local IP is found, ettercap look at the

@@ -48,6 +48,7 @@ FILTERS=\
 +whitespace/newline,\
 +whitespace/tabs
 
+echo Running CMake Lint against CMake files
 CMAKELINT="cmakelint --filter=$FILTERS --quiet --spaces=2"
 
 FIND="$(find $ECROOT \

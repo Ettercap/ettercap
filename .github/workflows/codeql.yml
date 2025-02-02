@@ -28,7 +28,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
@@ -36,12 +36,14 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y bison check cmake debhelper flex groff libbsd-dev libcurl4-openssl-dev libmaxminddb-dev libgtk-3-dev libgtk2.0-dev libidn11-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev librtmp-dev libssl-dev
-    - run: |
-        git clone https://github.com/richq/cmake-lint.git
-        cd cmake-lint
-        python setup.py install --user
-        cd -
+
+    - name: CMake formatting check
+      run: |
+        pip install cmakelint
         ./misc/cmakelint.sh
+
+    - name: Building software
+      run: |
         mkdir build
         cd build
         cmake -DENABLE_TESTS=Off $BUILD_ARGS ..
@@ -51,6 +53,6 @@ jobs:
         BUILD_ARGS: ''
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"

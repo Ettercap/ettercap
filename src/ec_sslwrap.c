@@ -504,13 +504,13 @@ static void sslw_bind_wrapper(void)
       if (ec_redirect(EC_REDIR_ACTION_INSERT, le->name,
                EC_REDIR_PROTO_IPV4, NULL,
                le->sslw_port, le->redir_port) != E_SUCCESS)
-        FATAL_ERROR("Can't insert firewall redirects");
+        FATAL_ERROR("Can't insert IPv4 firewall redirects");
 
 #ifdef WITH_IPV6
       if (ec_redirect(EC_REDIR_ACTION_INSERT, le->name,
                EC_REDIR_PROTO_IPV6, NULL,
                le->sslw_port, le->redir_port) != E_SUCCESS)
-        FATAL_ERROR("Can't insert firewall redirects");
+        FATAL_ERROR("Can't insert IPv6 firewall redirects. Considered uncommenting redir6 commands?");
 #endif
 
    }

@@ -196,6 +196,7 @@ void dissect_del(char *name)
       if (!strcasecmp(e->name, name)) {
          del_decoder(e->level, e->type);
          SLIST_REMOVE(&dissect_list, e, dissect_entry, next);
+         SAFE_FREE(e->name);
          SAFE_FREE(e);
       }
    }

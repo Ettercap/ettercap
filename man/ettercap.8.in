@@ -121,9 +121,9 @@ from the connections list you can kill all the connections you want
 
 
 .SH TARGET SPECIFICATION
-There is no concept of SOURCE nor DEST. The two targets are intended to filter
-traffic coming from one to the other and vice-versa (since the connection is
-bidirectional).
+There is no concept of SOURCE nor DEST. The purpose of the two targets is to
+tell Ettercap which packets to focus on for traffic coming from one to the other
+and vice-versa (since the connection is bidirectional).
 .PP
 \fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. 
 .br
@@ -163,11 +163,11 @@ going to 10.0.0.1 you can specify "./ettercap \-R /10.0.0.1/"
 .PP
 .B NOTE:
 .br
-TARGETs are also responsible of the initial scan of the lan. You can use them
-to restrict the scan to only a subset of the hosts in the netmask. The result
-of the merging between the two targets will be scanned. remember that not
-specifying a target means "no target", but specifying "//" means "all the hosts in
-the subnet".
+TARGETs are also responsible for the initial scan of the LAN. You can use them
+to limit the scan to a subset of the hosts in the netmask.
+The combined result of the two targets will be scanned.
+Remember that not specifying a target means "no target", but specifying "//"
+means "all the hosts in the subnet".
 .PP
 
 

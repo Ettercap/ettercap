@@ -351,7 +351,7 @@ endif()
 #
 if(GTK3_FIND_VERSION)
   if(NOT DEFINED CMAKE_MINIMUM_REQUIRED_VERSION)
-    cmake_minimum_required(VERSION 2.6.2)
+    cmake_minimum_required(VERSION 3.5)
   endif()
   set(GTK3_FAILED_VERSION_CHECK true)
   if(GTK3_DEBUG)

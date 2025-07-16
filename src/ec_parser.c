@@ -497,7 +497,7 @@ void parse_options(int argc, char **argv)
   
 #ifndef JUST_LIBRARY 
    if (EC_GBL_UI->init == NULL)
-      FATAL_ERROR("Please select an User Interface");
+      FATAL_ERROR("Please select a User Interface");
 #endif
      
    /* force text interface for only mitm attack */

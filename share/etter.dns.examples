@@ -26,7 +26,7 @@ www.example.org  A    0.0.0.0
 www.example.org  AAAA ::1
 
 ###############################################
-# one day we will have our ettercap.org domain
+# We now have our ettercap.org domain.
 #
 
 www.ettercap.org           A  127.0.0.1

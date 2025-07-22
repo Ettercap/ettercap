@@ -137,16 +137,18 @@ void capture_getifs(void)
       SAFE_CALLOC(cdev, 1, sizeof(pcap_if_t));
       memcpy(cdev, dev, sizeof(pcap_if_t));
 
-      /* set the description for the local loopback */
+      /* fill the empty descriptions */
+      if (cdev->description == NULL)
+         cdev->description = strdup(cdev->name);
+      else /* use separate pointer to avoid double-free through pcap_freealldevs() */
+         cdev->description = strdup(cdev->description);
+
+      /* Normalize the description for the local loopback */
       if (cdev->flags & PCAP_IF_LOOPBACK) {
          SAFE_FREE(cdev->description);
          cdev->description = strdup("Local Loopback");
       }
      
-      /* fill the empty descriptions */
-      if (cdev->description == NULL)
-         cdev->description = strdup(cdev->name);
-
       DEBUG_MSG("capture_getifs: [%s] %s", cdev->name, cdev->description);
 
       /* reset link to next list element */

@@ -412,6 +412,10 @@ char * str_tohex(u_char *bin, size_t len, char *dst, size_t dst_len)
 
    memset(dst, 0, dst_len);
 
+   /* truncate to avoid write beyond buffer */
+   if (dst_len <= len*2)
+      len = (dst_len-1)/2; // keep buffer for trailing NULL byte
+
    for (i = 0; i < len; i++)
       sprintf(dst + i*2, "%02X", bin[i]);
 

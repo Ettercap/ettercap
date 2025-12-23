@@ -1053,7 +1053,7 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
    int index = 0;
 
    if ((out_cert = X509_new()) == NULL)
-       goto err;
+      goto err;
 
    /* Set out public key, real server name... */
    X509_set_version(out_cert, X509_get_version(server_cert));
@@ -1072,34 +1072,35 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
       ext = X509_get_ext(server_cert, index);
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
       ASN1_OCTET_STRING* os;
-      os = X509_EXTENSION_get_data (ext);
+      os = X509_EXTENSION_get_data(ext);
       if (ASN1_STRING_length(os) < 9)
-          goto err;
-      if ((ext_bytes = strndup(ASN1_STRING_get0_data(os), ASN1_STRING_length(os))) == NULL)
-          goto err;
+         goto err;
+
+      SAFE_CALLOC(ext_bytes, 1, ASN1_STRING_length(os));
+      memcpy(ext_bytes, ASN1_STRING_get0_data(os), ASN1_STRING_length(os));
 #endif
       if (ext) {
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
          ext_bytes[7] = 0xe7;
          ext_bytes[8] = 0x7e;
          if (!ASN1_STRING_set(os, ext_bytes, ASN1_STRING_length(os)))
-             goto err;
-         if (!X509_EXTENSION_set_data (ext, os))
-             goto err;
+            goto err;
+         if (!X509_EXTENSION_set_data(ext, os))
+            goto err;
 #else
          ext->value->data[7] = 0xe7;
          ext->value->data[8] = 0x7e;
 #endif
          if (!X509_add_ext(out_cert, ext, -1))
-             goto err;
+            goto err;
       }
    }
 
    /* take over SAN extension from peer certificate */
    index = X509_get_ext_by_NID(server_cert, NID_subject_alt_name, index);
    if (index >= 0) {
-       if (!X509_add_ext(out_cert, X509_get_ext(server_cert, index), -1))
-           goto err;
+      if (!X509_add_ext(out_cert, X509_get_ext(server_cert, index), -1))
+         goto err;
    }
 
    /* grab digest algorithm from peer certificate */
@@ -1120,8 +1121,8 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
    out_cert = NULL;
 
 err:
-   free(out_cert);
-   free(ext_bytes);
+   SAFE_FREE(out_cert);
+   SAFE_FREE(ext_bytes);
 
    return ret;
 }

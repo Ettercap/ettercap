@@ -1044,14 +1044,16 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
  * Create a self-signed certificate
  */
 static X509 *sslw_create_selfsigned(X509 *server_cert)
-{   
-   X509 *out_cert;
+{
+   unsigned char *ext_bytes = NULL;
+   X509 *out_cert = NULL;
+   X509 *ret = NULL;
    X509_EXTENSION *ext;
    const EVP_MD *md;
    int index = 0;
-   
+
    if ((out_cert = X509_new()) == NULL)
-      return NULL;
+       goto err;
 
    /* Set out public key, real server name... */
    X509_set_version(out_cert, X509_get_version(server_cert));
@@ -1060,9 +1062,9 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
    X509_set_notAfter(out_cert, X509_get_notAfter(server_cert));
    X509_set_pubkey(out_cert, global_pk);
    X509_set_subject_name(out_cert, X509_get_subject_name(server_cert));
-   X509_set_issuer_name(out_cert, X509_get_issuer_name(server_cert));  
+   X509_set_issuer_name(out_cert, X509_get_issuer_name(server_cert));
 
-   /* Modify the issuer a little bit */ 
+   /* Modify the issuer a little bit */
    //X509_NAME_add_entry_by_txt(X509_get_issuer_name(out_cert), "L", MBSTRING_ASC, " ", -1, -1, 0);
 
    index = X509_get_ext_by_NID(server_cert, NID_authority_key_identifier, -1);
@@ -1071,24 +1073,33 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
       ASN1_OCTET_STRING* os;
       os = X509_EXTENSION_get_data (ext);
+      if (ASN1_STRING_length(os) < 9)
+          goto err;
+      if ((ext_bytes = strndup(ASN1_STRING_get0_data(os), ASN1_STRING_length(os))) == NULL)
+          goto err;
 #endif
       if (ext) {
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-         os->data[7] = 0xe7;
-         os->data[8] = 0x7e;
-         X509_EXTENSION_set_data (ext, os);
+         ext_bytes[7] = 0xe7;
+         ext_bytes[8] = 0x7e;
+         if (!ASN1_STRING_set(os, ext_bytes, ASN1_STRING_length(os)))
+             goto err;
+         if (!X509_EXTENSION_set_data (ext, os))
+             goto err;
 #else
          ext->value->data[7] = 0xe7;
          ext->value->data[8] = 0x7e;
 #endif
-         X509_add_ext(out_cert, ext, -1);
+         if (!X509_add_ext(out_cert, ext, -1))
+             goto err;
       }
    }
 
    /* take over SAN extension from peer certificate */
    index = X509_get_ext_by_NID(server_cert, NID_subject_alt_name, index);
    if (index >= 0) {
-      X509_add_ext(out_cert, X509_get_ext(server_cert, index), -1);
+       if (!X509_add_ext(out_cert, X509_get_ext(server_cert, index), -1))
+           goto err;
    }
 
    /* grab digest algorithm from peer certificate */
@@ -1101,12 +1112,18 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
 
    /* Self-sign our certificate */
    if (!X509_sign(out_cert, global_pk, md)) {
-      X509_free(out_cert);
       DEBUG_MSG("Error self-signing X509");
-      return NULL;
+      goto err;
    }
-     
-   return out_cert;
+
+   ret = out_cert;
+   out_cert = NULL;
+
+err:
+   free(out_cert);
+   free(ext_bytes);
+
+   return ret;
 }
 
 /* 

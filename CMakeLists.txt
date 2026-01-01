@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.25)
 project(ettercap C)
 
 set(VERSION "0.8.4-rc")

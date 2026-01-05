@@ -3,7 +3,7 @@
 
 [ -f get-mac.sh ] && SHARE=../share || SHARE=share # set the relative path to ettercap's "share" directory
 
-wget http://standards.ieee.org/develop/regauth/oui/oui.txt
+wget https://standards-oui.ieee.org/oui/oui.txt
 cat oui.txt |grep "base 16"  > oui #clean unused lines
 sed 's/\ \ \ \ \ (base\ 16)\t\t/ /g' -i oui #remove spaces
 sed 's/\ \ //g' -i oui #remove initial stuff

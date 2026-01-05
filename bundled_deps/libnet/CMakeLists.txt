@@ -3,7 +3,7 @@
 # This will build libnet using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-set(LIBNET_VERSION 1.2)
+set(LIBNET_VERSION 1.3)
 set(LIBNET_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBNET_TARGET bundled-libnet-${LIBNET_VERSION}-${CMAKE_BUILD_TYPE})
 set(LIBNET_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${LIBNET_TARGET})

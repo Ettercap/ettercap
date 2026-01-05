@@ -519,7 +519,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    /* create header bar and menubuttons */
    header = gtk_header_bar_new();
    gtk_header_bar_set_title(GTK_HEADER_BAR(header), title);
-   gtk_header_bar_set_subtitle(GTK_HEADER_BAR(header), EC_VERSION " (EB)");
+   gtk_header_bar_set_subtitle(GTK_HEADER_BAR(header), EC_VERSION);
    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
    gtk_window_set_titlebar(GTK_WINDOW(window), header);
 

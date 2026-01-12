@@ -38,6 +38,8 @@ if(NOT NO_INSTALL_LICENSE)
 endif()
 
 if(HAVE_GEOIP)
+  file(ARCHIVE_EXTRACT INPUT GeoLite2-Country_20260102.tar.gz
+       PATTERNS "GeoLite2-Country.mmdb")
   set(EC_DATAFILES ${EC_DATAFILES} GeoLite2-Country.mmdb)
 endif()
 

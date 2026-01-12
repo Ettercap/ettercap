@@ -58,8 +58,14 @@
    #include <net/bpf.h>
 #endif
 
-/* these are often needed... */
+/* on BSD net/bpf.h must be included after queue.h in ec_queue.h */
 #include <ec_queue.h>
+#ifdef OS_BSD
+   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
+   #include <net/bpf.h>
+#endif
+
+/* these are often needed... */
 #include <ec_error.h>
 #include <ec_debug.h>
 #include <ec_stdint.h>
@@ -68,12 +74,6 @@
 
 #ifdef OS_MINGW
    #include <ec_os_mingw.h>
-#endif
-
-/* on BSD net/bpf.h must be included after queue.h in ec_queue.h */
-#ifdef OS_BSD
-   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
-   #include <net/bpf.h>
 #endif
 
 

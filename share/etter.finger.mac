@@ -4662,7 +4662,6 @@ A09805 OpenVox Communication Co Ltd
 002157 National Datacast, Inc.
 00210C Cymtec Systems, Inc.
 00210B GEMINI TRAZE RFID PVT. LTD.
-002104 Gigaset Communications GmbH
 001FFB Green Packet Bhd
 00212A Audiovox Corporation
 00214D Guangzhou Skytone Transmission Technology Com. Ltd.
@@ -7782,9 +7781,16 @@ D02C39 Cisco Systems, Inc
 5CFFA9 zte corporation
 D0B324 Apple, Inc.
 1CFF3F Cust2mate
-50617E Shenzhen MiaoMing Intelligent Technology Co.,Ltd
 7483A0 Shenzhen MiaoMing Intelligent Technology Co.,Ltd
+6025ED Hewlett Packard Enterprise
 204B2E Pizzato Elettrica S.r.l.
+50617E Shenzhen MiaoMing Intelligent Technology Co.,Ltd
+2C79BE TP-LINK TECHNOLOGIES CO.,LTD.
+4C0997 Arista Networks
+0464FA Dell Inc.
+002104 Gigaset Technologies GmbH
+ACD20C Chengdu SingCore Technology Co.,Ltd.
+74DC13 Telink Micro LLC
 000130 Extreme Networks Headquarters
 FC0A81 Extreme Networks Headquarters
 00749C Ruijie Networks Co.,LTD
@@ -9794,8 +9800,6 @@ A4DA32 Texas Instruments
 504C7E THE 41ST INSTITUTE OF CETC
 2C4759 Beijing MEGA preponderance Science & Technology Co. Ltd
 DCE0EB Nanjing Aozheng Information Technology Co.Ltd
-00151E ETHERNET Powerlink Standarization Group (EPSG)
-00111E ETHERNET Powerlink Standarization Group (EPSG)
 00409D DigiBoard
 149346 PNI sensor corporation
 00138A Qingdao GoerTek Technology Co., Ltd.
@@ -15446,16 +15450,22 @@ E45341 Apple, Inc.
 A422B6 Motorola Mobility LLC, a Lenovo Company
 CC808F Apple, Inc.
 E0BA78 Apple, Inc.
+982AFD HUAWEI TECHNOLOGIES CO.,LTD
+2CAE46 CLOUD NETWORK TECHNOLOGY SINGAPORE PTE. LTD.
 6C7742 zte corporation
 10CD54 HUAWEI TECHNOLOGIES CO.,LTD
 94A25D HUAWEI TECHNOLOGIES CO.,LTD
 B4C3D9 HUAWEI TECHNOLOGIES CO.,LTD
 542618 HUAWEI TECHNOLOGIES CO.,LTD
-982AFD HUAWEI TECHNOLOGIES CO.,LTD
-2CAE46 CLOUD NETWORK TECHNOLOGY SINGAPORE PTE. LTD.
+889986 TP-LINK TECHNOLOGIES CO.,LTD.
 9020D7 Microsoft Corporation
 28B20B NXP USA, Inc
 80AF9F eero inc.
+6095F8 Arcadyan Corporation
+00111E B&R Industrial Automation GmbH 
+00151E B&R Industrial Automation GmbH 
+802AF6 Honor Device Co., Ltd.
+00A307 Honor Device Co., Ltd.
 6C8720 New H3C Technologies Co., Ltd
 0C8D7A RADiflow
 FCA9F5 Xiaomi Communications Co Ltd
@@ -17286,7 +17296,6 @@ E4388C Digital Products Limited
 A40C66 Shenzhen Colorful Yugong Technology and Development Co., Ltd.
 84A93E Hewlett Packard
 349342 TTE Corporation
-589EC6 Gigaset Communications GmbH
 B0C387 GOEFER, Inc.
 086BD7 Silicon Laboratories
 6458AD China Mobile IOT Company Limited
@@ -23152,11 +23161,20 @@ A4F01F CANON INC.
 D83EEB AltoBeam Inc.
 5C4879 HUAWEI TECHNOLOGIES CO.,LTD
 DC575C PR Electronics A/S
-E485FB Quectel Wireless Solutions Co.,Ltd.
-546C50 Nanjing Qinheng Microelectronics Co., Ltd.
-B8BA66 Microsoft Corporation
-64B4E8 Shenzhen D-Robotics Co., Ltd.
+446690 TP-LINK TECHNOLOGIES CO.,LTD.
 384712 Luxottica Tristar (Dongguan) Optical Co.,Ltd
+64B4E8 Shenzhen D-Robotics Co., Ltd.
+546C50 Nanjing Qinheng Microelectronics Co., Ltd.
+E485FB Quectel Wireless Solutions Co.,Ltd.
+B8BA66 Microsoft Corporation
+28ADEA Mallow SAS
+6065F4 Chipsea Technologies (Shenzhen) Crop.
+B07A16 ROEHN
+589EC6 Gigaset Technologies GmbH
+B861FC Juniper Networks
+E847F3 upscale ai
+84C665 Taicang T&W Electronics
+083C03 IEEE Registration Authority
 B00C9D Quectel Wireless Solutions Co.,Ltd.
 F0AB1F zte corporation
 7CB30A zte corporation
@@ -30960,6 +30978,13 @@ F4A3C2 Shenzhen iComm Semiconductor CO.,LTD
 080299 HC Corporation
 3C65D1 HUAWEI TECHNOLOGIES CO.,LTD
 807786 IEEE Registration Authority
+F80C9A GUANGDONG OPPO MOBILE TELECOMMUNICATIONS CORP.,LTD
+541FCD GUANGDONG OPPO MOBILE TELECOMMUNICATIONS CORP.,LTD
+AC276E Espressif Inc.
+643136 Mellanox Technologies, Inc.
+88F155 Espressif Inc.
+94FC87 Hirschmann Automation and Control GmbH
+E4793F Juniper Networks
 C85CE2 IEEE Registration Authority
 DCEE14 ADT Technology
 10FFE0 GIGA-BYTE TECHNOLOGY CO.,LTD.
@@ -38668,3 +38693,10 @@ D0F815 HUAWEI TECHNOLOGIES CO.,LTD
 045E0A SHENZHEN TRANSCHAN TECHNOLOGY LIMITED
 A86ACB EVAR
 58D812 TP-Link Systems Inc.
+70792D Mellanox Technologies, Inc.
+A4431B Dreamtek Intelligent Technology Co., Ltd
+B88411 Shenzhen Shokz Co., Ltd.
+84B890 TP-LINK TECHNOLOGIES CO.,LTD.
+F04FE0 Vizio, Inc
+946A7C OnePlus Technology (Shenzhen) Co., Ltd
+209BA9 Espressif Inc.

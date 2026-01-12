@@ -3,7 +3,8 @@
 # This will build libnet using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-set(LIBNET_VERSION 1.2)
+set(LIBNET_VERSION 1.3)
+set(LIBNET_VERSION_FILE VERSION)
 set(LIBNET_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBNET_TARGET bundled-libnet-${LIBNET_VERSION}-${CMAKE_BUILD_TYPE})
 set(LIBNET_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${LIBNET_TARGET})
@@ -15,13 +16,6 @@ set(LIBNET_PREFIX ${LIBNET_BUILD_ROOT}/usr)
 set(LIBNET_LIB_DIR ${LIBNET_PREFIX}/lib)
 set(LIBNET_INCLUDE_DIR ${LIBNET_PREFIX}/include)
 set(LIBNET_LIBRARY ${LIBNET_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}net${CMAKE_STATIC_LIBRARY_SUFFIX})
-
-if(OS_BSD_OPEN)
-# On OpenBSD, timeb.h has been dropped since quite some time
-# Actually the libnet code doesn't really depend on it
-# so the patch just removes the unnecessary #include <sys/timeb.h>
-  set(LIBNET_TIMEB_PATCH ${CMAKE_CURRENT_SOURCE_DIR}/libnet-timeb.patch)
-endif()
 
 if(OS_BSD_FREE)
 # On FreeBSD, arpa/inet.h does not include netinet/in.h even though
@@ -58,6 +52,8 @@ configure_file(${LIBNET_SOURCE_DIR}/libnet_build_wrapper.sh.in
   ${LIBNET_BUILD_WRAPPER} @ONLY)
 configure_file(${LIBNET_SOURCE_DIR}/libnet_install_wrapper.sh.in
   ${LIBNET_INSTALL_WRAPPER} @ONLY)
+configure_file(${LIBNET_SOURCE_DIR}/${LIBNET_VERSION_FILE}.in
+  ${LIBNET_VERSION_FILE} @ONLY)
 
 #########################
 

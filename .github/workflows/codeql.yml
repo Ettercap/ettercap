@@ -35,7 +35,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y bison check cmake debhelper flex groff libbsd-dev libcurl4-openssl-dev libmaxminddb-dev libgtk-3-dev libgtk2.0-dev libidn11-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev librtmp-dev libssl-dev
+        sudo apt-get install -y bison check cmake debhelper flex groff libbsd-dev libcurl4-openssl-dev libmaxminddb-dev libgtk-3-dev libgtk2.0-dev libidn11-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev librtmp-dev libssl-dev libpsl-dev
 
     - name: CMake formatting check
       run: |

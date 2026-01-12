@@ -4,6 +4,7 @@
 # our distribution of ettercap.
 include(ExternalProject)
 set(LIBNET_VERSION 1.3)
+set(LIBNET_VERSION_FILE VERSION)
 set(LIBNET_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBNET_TARGET bundled-libnet-${LIBNET_VERSION}-${CMAKE_BUILD_TYPE})
 set(LIBNET_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${LIBNET_TARGET})
@@ -58,6 +59,8 @@ configure_file(${LIBNET_SOURCE_DIR}/libnet_build_wrapper.sh.in
   ${LIBNET_BUILD_WRAPPER} @ONLY)
 configure_file(${LIBNET_SOURCE_DIR}/libnet_install_wrapper.sh.in
   ${LIBNET_INSTALL_WRAPPER} @ONLY)
+configure_file(${LIBNET_SOURCE_DIR}/${LIBNET_VERSION_FILE}.in
+  ${LIBNET_BUILD_ROOT}/build/${LIBNET_VERSION_FILE} @ONLY)
 
 #########################
 

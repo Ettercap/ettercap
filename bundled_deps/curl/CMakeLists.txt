@@ -34,6 +34,11 @@ if(NOT LIBRTMP_FOUND)
   message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
 endif()
 
+find_library(HAVE_PSL psl)
+if(NOT HAVE_PSL)
+  message(FATAL_ERROR "Cannot build bundled Curl without libpsl")
+endif()
+
 set(CMAKE_THREAD_PREFER_PTHREAD 1)
 find_package(Threads REQUIRED)
 if(NOT CMAKE_USE_PTHREADS_INIT)
@@ -46,6 +51,7 @@ set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATI
   ${ZLIB_LIBRARIES}
   ${LIBIDN_LIBRARIES}
   ${RTMP_LIBRARIES}
+  ${HAVE_PSL}
   )
 
 #Figure out the parent directory for our openssl installation.

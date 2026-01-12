@@ -53,7 +53,7 @@ configure_file(${LIBNET_SOURCE_DIR}/libnet_build_wrapper.sh.in
 configure_file(${LIBNET_SOURCE_DIR}/libnet_install_wrapper.sh.in
   ${LIBNET_INSTALL_WRAPPER} @ONLY)
 configure_file(${LIBNET_SOURCE_DIR}/${LIBNET_VERSION_FILE}.in
-  ${LIBNET_BUILD_ROOT}/build/${LIBNET_VERSION_FILE} @ONLY)
+  ${LIBNET_VERSION_FILE} @ONLY)
 
 #########################
 

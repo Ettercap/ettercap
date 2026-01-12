@@ -1,5 +1,5 @@
 include(ExternalProject)
-set(LUAJIT_VERSION 2.0.5)
+set(LUAJIT_VERSION v2.1-20250826)
 set(LUAJIT_TARGET bundled-luajit-${LUAJIT_VERSION}-${CMAKE_BUILD_TYPE})
 set(LUAJIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LUAJIT_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${LUAJIT_TARGET})
@@ -8,7 +8,7 @@ set(LUAJIT_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/luajit_install_wrapper.sh
 
 set(LUAJIT_PREFIX ${LUAJIT_BUILD_ROOT}/usr)
 set(LUAJIT_LIB_DIR ${LUAJIT_PREFIX}/lib)
-set(LUAJIT_INCLUDE_DIR ${LUAJIT_PREFIX}/include/luajit-2.0)
+set(LUAJIT_INCLUDE_DIR ${LUAJIT_PREFIX}/include/luajit-2.1)
 
 # LuaJIT requires both libm and libdl.. Let's find those.
 
@@ -66,7 +66,7 @@ configure_file(${LUAJIT_SOURCE_DIR}/luajit_install_wrapper.sh.in
 
 externalproject_add(
     ${LUAJIT_TARGET}
-    URL ${LUAJIT_SOURCE_DIR}/LuaJIT-${LUAJIT_VERSION}.tar.gz
+    URL ${LUAJIT_SOURCE_DIR}/v${LUAJIT_VERSION}.tar.gz
     BUILD_IN_SOURCE 1
     SOURCE_DIR ${LUAJIT_BUILD_ROOT}/build
     CONFIGURE_COMMAND ""

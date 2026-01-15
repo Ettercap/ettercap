@@ -98,6 +98,12 @@ else()
   set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
 endif()
 
+# Avoid finding 32-bit multilib on FreeBSD
+if(OS_BSD AND OS_BSD_FREE)
+  set(CMAKE_IGNORE_PATH /usr/lib32)
+endif()
+
+
 if(LIBRARY_BUILD)
   set(ENABLE_GTK OFF)
   set(ENABLE_CURSES OFF)

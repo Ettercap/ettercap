@@ -175,7 +175,7 @@ geoip_data_file = ""
 #    Mac Os X
 #---------------
 
-   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to %destination port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
+   #redir_command_on = "(pfctl -Psn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to %destination port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
    #redir_command_off = "pfctl -Psn 2> /dev/null | egrep -v 'inet .+ any to %destination port = %port' | pfctl -f - 2> /dev/null"
 
 
@@ -192,7 +192,7 @@ geoip_data_file = ""
 # `pfctl -si | grep Status | awk '{print $2;}'`. If "Disabled", enable it with
 # `pfctl -e`.
 
-   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to %destination port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
+   #redir_command_on = "(pfctl -Psn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to %destination port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
    #redir_command_off = "pfctl -Psn 2> /dev/null | egrep -v 'inet .+ any to %destination port = %port' | pfctl -f - 2> /dev/null"
 
 

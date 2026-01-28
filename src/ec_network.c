@@ -91,18 +91,14 @@ void network_init()
 
 static void close_network()
 {
-   pcap_close(EC_GBL_IFACE->pcap);
-   SAFE_FREE(EC_GBL_IFACE->pbuf);
+   source_close(EC_GBL_IFACE);
+
    if(EC_GBL_SNIFF->type == SM_BRIDGED) {
-      pcap_close(EC_GBL_BRIDGE->pcap);
-      SAFE_FREE(EC_GBL_BRIDGE->pbuf);
+      source_close(EC_GBL_BRIDGE);
    }
 
    if(EC_GBL_OPTIONS->write)
       pcap_dump_close(EC_GBL_PCAP->dump);
-
-   libnet_destroy(EC_GBL_IFACE->lnet);
-   libnet_destroy(EC_GBL_BRIDGE->lnet);
 
    DEBUG_MSG("ATEXIT: close_network");
 }
@@ -325,8 +321,9 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
 static void source_close(struct iface_env *iface)
 {
+   DEBUG_MSG("source_close(%s)", iface->name);
 #ifdef WITH_IPV6
-   struct net_list *n;
+   struct net_list *n, *tmp;
 #endif
 
    iface->is_ready = 0;
@@ -338,13 +335,16 @@ static void source_close(struct iface_env *iface)
       libnet_destroy(iface->lnet);
   
 #ifdef WITH_IPV6 
-   LIST_FOREACH(n, &iface->ip6_list, next) {
-      LIST_REMOVE(n, next);
-      SAFE_FREE(n);
+   if (iface->has_ipv6) {
+      LIST_FOREACH_SAFE(n, &iface->ip6_list, next, tmp) {
+         LIST_REMOVE(n, next);
+         SAFE_FREE(n);
+      }
    }
 #endif
 
    SAFE_FREE(iface->name);
+   SAFE_FREE(iface->pbuf);
    memset(iface, 0, sizeof(*iface));
 }
 

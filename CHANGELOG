@@ -4,10 +4,27 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
-0.8.4-nnnnnnnn    YYYYMMDD
+0.8.4-Garofalo    20260201
+   !! Fix curl version detection for curl version > 7
+   !! Proper unloading for all plugins
+   !! Fixing some memory leaks
+   !! Fix issue when de- and re-activating dns_spoof plugin
+   !! Fix segmentation fault when stopping isolate plugin
+   !! Handle pre-defined target host list when used in silent mode
+   !! Fix support when used with network sub-interfaces
+   !! Globals are properly freed before exit
+   !! OpenSSL access to opaque data
+   !! Match cmake minimum version requirement - fixes #1278 (Gentoo bug: 955891)
    !! Fix fingerprint composition
    !! Default connection buffer size increased from 10KByte to 10MByte
-   !! /etc/ettercap is now by default /usr/local/etc/ettercap under MacOSX, FreeBSD and Windows
+   !! /etc/ettercap is now by default /usr/local/etc/ettercap under non-Linux OS
+   !! Fix build issue on FreeBSD
+   !! Fix redirect rule (de-)installation for port 8080 on FreeBSD
+   ++ Updated bundled OUI mac addresses
+   ++ Updated bundled libnet from version 1.2 to 1.3
+   ++ Updated bundled curl from version 7.86 to 8.18
+   ++ Updated bundled luajit from version 2.0.5 to v2.1-20250826
+   ++ Proper XDG hi-color icon support
    ++ new random etterfilter function
    ++ superseded legacy GeoIP C API with libmaxminddb C API
 

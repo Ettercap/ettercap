@@ -172,6 +172,8 @@ endif()
 # Still haven't found curl? Bail!
 if(NOT CURL_FOUND)
     message(STATUS "Could not find Curl, sslstrip and curl support will be disabled!")
+else()
+    include_directories(${CURL_INCLUDE_DIR})
 endif()
 
 check_function_exists(poll HAVE_POLL)

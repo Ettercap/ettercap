@@ -1302,7 +1302,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    menubutton = gtk_button_new();
    gtk_widget_set_tooltip_text(menubutton, "Accept");
    gtk_button_set_image(GTK_BUTTON(menubutton),
-         gtk_image_new_from_icon_name("emblem-ok-symbolic", GTK_ICON_SIZE_BUTTON));
+         gtk_image_new_from_icon_name("object-select-symbolic", GTK_ICON_SIZE_BUTTON));
    gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menubutton);
    g_signal_connect(G_OBJECT(menubutton), "clicked", G_CALLBACK(gtkui_sniff), switcher);
    

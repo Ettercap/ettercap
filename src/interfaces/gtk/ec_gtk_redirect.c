@@ -34,6 +34,8 @@ static void gtkui_sslredir_del_all(GtkWidget *widget, gpointer data);
 static void gtkui_sslredir_add_list(struct redir_entry *re);
 static void gtkui_sslredir_add_service(struct serv_entry *se);
 static void gtkui_sslredir_create_lists(void);
+static void gtkui_sslredir_refresh_lists(void);
+static void gtkui_sslredir_refresh_cb(GtkWidget *widget, gpointer data);
 static void gtkui_sslredir_af_changed(GtkWidget *widget, gpointer data);
 static gboolean gtkui_sslredir_key_pressed(GtkWidget *widget,
       GdkEventKey *event, gpointer data);
@@ -155,6 +157,12 @@ void gtkui_sslredir_show(void)
    gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), items);
    g_signal_connect(G_OBJECT(items), "activate",
          G_CALLBACK(gtkui_sslredir_del_all), model);
+   gtk_widget_show(items);
+
+   items = gtk_menu_item_new_with_label("Refresh redirects");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), items);
+   g_signal_connect(G_OBJECT(items), "activate",
+         G_CALLBACK(gtkui_sslredir_refresh_cb), model);
    gtk_widget_show(items);
 
    g_signal_connect(G_OBJECT(treeview), "button-press-event",
@@ -420,12 +428,11 @@ static void gtkui_sslredir_close(void)
  */
 static void gtkui_sslredir_create_lists(void)
 {
-   int res;
 
    DEBUG_MSG("gtk_sslredir_create_lists()");
 
    /* populate redirect rules */
-   if (redirrules == NULL) {
+   if (redirrules == NULL)
       redirrules = gtk_list_store_new(7,
             G_TYPE_UINT,    /* IP address family */
             G_TYPE_STRING,  /* IP address family human readable */
@@ -434,35 +441,58 @@ static void gtkui_sslredir_create_lists(void)
             G_TYPE_UINT,    /* ettercap listener port */
             G_TYPE_STRING,  /* protocol name lower case */
             G_TYPE_STRING); /* protocol name upper case */
-      /* walk through list of registered redirects */
-      res = ec_walk_redirects(&gtkui_sslredir_add_list);
-
-      if (res == -E_NOTFOUND) {
-         DEBUG_MSG("gtk_sslredir_create_lists(): no redirects registered - "
-               "apparently no redirect commands enabled in etter.conf");
-         gtkui_message("Traffic redirect not enabled in etter.conf. ");
-      }
-   }
 
 
    /* populate registered services */
-   if (proto_list == NULL) {
+   if (proto_list == NULL)
       proto_list = gtk_list_store_new(4,
             G_TYPE_STRING,  /* protocol name lower case */
             G_TYPE_STRING,  /* protocol name upper case */
             G_TYPE_UINT,    /* protocol registered port */
             G_TYPE_UINT);   /* ettercap listener port */
 
-      res = ec_walk_redirect_services(&gtkui_sslredir_add_service);
+   gtkui_sslredir_refresh_lists();
 
-      if (res == -E_NOTFOUND) {
-         g_object_unref(proto_list);
-         proto_list = NULL;
-      }
+}
+
+/*
+ * function to rebuild the list from registered redirects
+ */
+static void gtkui_sslredir_refresh_lists(void)
+{
+   int res;
+
+   /* clear lists stores for redirects and services */
+   gtk_list_store_clear(redirrules);
+   gtk_list_store_clear(proto_list);
+
+   /* walk through list of registered redirects and populate */
+   res = ec_walk_redirects(&gtkui_sslredir_add_list);
+
+   if (res == -E_NOTFOUND) {
+      DEBUG_MSG("gtk_sslredir_create_lists(): no redirects registered - "
+            "apparently no redirect commands enabled in etter.conf");
+      gtkui_message("No traffic redirects. Maybe not enabled in etter.conf!");
    }
 
+   /* populate registered services */
+   res = ec_walk_redirect_services(&gtkui_sslredir_add_service);
 
+   if (res == -E_NOTFOUND) {
+      g_object_unref(proto_list);
+      proto_list = NULL;
+   }
+}
 
+/*
+ * callback wrapper function refreshing the list of redirects
+ */
+void gtkui_sslredir_refresh_cb(GtkWidget *widget, gpointer data)
+{
+   (void) widget;
+   (void) data;
+
+   gtkui_sslredir_refresh_lists();
 }
 
 /*
@@ -544,6 +574,11 @@ gboolean gtkui_sslredir_key_pressed(GtkWidget *widget, GdkEventKey *event,
       gpointer data)
 {
    DEBUG_MSG("gtkui_sslredir_key_pressed()");
+
+   if (event->keyval == gdk_keyval_from_name("F5")) {
+      gtkui_sslredir_refresh_lists();
+      return TRUE;
+   }
 
    if (event->keyval == gdk_keyval_from_name("Delete")) {
       gtkui_sslredir_del(widget, data);

@@ -3,7 +3,7 @@
 # This will build curl using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-set(CURL_VERSION 7.86.0)
+set(CURL_VERSION 8.18.0)
 set(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
 set(CURL_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CURL_TARGET})
@@ -24,16 +24,6 @@ if(NOT ZLIB_LIBRARIES)
   message(FATAL_ERROR "Cannot build bundled Curl without zlib")
 endif()
 
-find_package(LIBIDN)
-if(NOT LIBIDN_FOUND)
-  message(FATAL_ERROR "Cannot build bundled Curl without idn")
-endif()
-
-find_package(LIBRTMP)
-if(NOT LIBRTMP_FOUND)
-  message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
-endif()
-
 set(CMAKE_THREAD_PREFER_PTHREAD 1)
 find_package(Threads REQUIRED)
 if(NOT CMAKE_USE_PTHREADS_INIT)
@@ -44,8 +34,6 @@ endif()
 set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
   ${OPENSSL_LIBRARIES}
   ${ZLIB_LIBRARIES}
-  ${LIBIDN_LIBRARIES}
-  ${RTMP_LIBRARIES}
   )
 
 #Figure out the parent directory for our openssl installation.

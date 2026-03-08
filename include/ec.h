@@ -94,6 +94,12 @@
    ON_ERROR(x, NULL, "virtual memory exhausted"); \
 } while(0)
 
+#define SAFE_RECALLOC(x, s) do { \
+   x = realloc(x, s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+   memset(x, 0, s); \
+} while(0)
+
 #define SAFE_STRDUP(x, s) do{ \
    x = strdup(s); \
    ON_ERROR(x, NULL, "virtual memory exhausted"); \

@@ -4,6 +4,9 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
+0.8.4.1-Garofalo    20260407
+   !! Fix heap-out-of-bounds read issue in etterfilter (CVE-2026-3606)
+=========================================
 0.8.4-Garofalo    20260201
    !! Fix curl version detection for curl version > 7
    !! Proper unloading for all plugins

@@ -46,6 +46,7 @@ struct ec_conf {
    int connection_buffer;
    int connect_timeout;
    int sampling_rate;
+   int packet_update_count;
    int close_on_eof;
    int aggressive_dissectors;
    int skip_forwarded;

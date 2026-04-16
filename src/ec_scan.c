@@ -670,9 +670,9 @@ int scan_load_hosts(char *filename)
 {
    FILE *hf;
    int nhosts;
-   char ip[MAX_ASCII_ADDR_LEN];
-   char mac[ETH_ASCII_ADDR_LEN];
-   char name[MAX_HOSTNAME_LEN];
+   char ip[MAX_ASCII_ADDR_LEN+1];
+   char mac[ETH_ASCII_ADDR_LEN+1];
+   char name[MAX_HOSTNAME_LEN+1];
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
 

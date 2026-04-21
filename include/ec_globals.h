@@ -104,6 +104,7 @@ struct ec_options {
    char *target1;
    char *target2;
    char *script;
+   char *script_orig;
    char *ssl_cert;
    char *ssl_pkey;
    FILE *msg_fd;

@@ -190,7 +190,6 @@ void capture_freeifs(void)
    for (dev = EC_GBL_PCAP->ifs; dev != NULL; dev = ndev) {
       /* save the next entry in the list and free memory for the entry */
       ndev = dev->next;
-      SAFE_FREE(dev->description);
       SAFE_FREE(dev);
    }
 
@@ -212,7 +211,7 @@ char* capture_default_if(void)
     */
 
    if (EC_GBL_PCAP && EC_GBL_PCAP->ifs)
-      return EC_GBL_PCAP->ifs->name;
+      return strdup(EC_GBL_PCAP->ifs->name);
 
    return NULL;
 }

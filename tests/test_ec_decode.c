@@ -12,25 +12,25 @@ struct ec_globals *ec_gbls;
 
 START_TEST (test_get_decoder_default)
 {
-  fail_if(get_decoder(APP_LAYER, PL_DEFAULT) == NULL, "Could not find default decoder.");
+  ck_assert_msg(get_decoder(APP_LAYER, PL_DEFAULT) != NULL, "Could not find default decoder.");
 }
 END_TEST
 
 START_TEST (test_get_decoder_ip)
 {
-  fail_if(get_decoder(NET_LAYER, LL_TYPE_IP) == NULL, "Could not find IP decoder.");
+  ck_assert_msg(get_decoder(NET_LAYER, LL_TYPE_IP) != NULL, "Could not find IP decoder.");
 }
 END_TEST
 
 START_TEST (test_get_decoder_tcp)
 {
-  fail_if(get_decoder(PROTO_LAYER, NL_TYPE_TCP) == NULL, "Could not find TCP decoder.");
+  ck_assert_msg(get_decoder(PROTO_LAYER, NL_TYPE_TCP) != NULL, "Could not find TCP decoder.");
 }
 END_TEST
 
 START_TEST (test_get_decoder_udp)
 {
-  fail_if(get_decoder(PROTO_LAYER, NL_TYPE_UDP) == NULL, "Could not find UDP decoder.");
+  ck_assert_msg(get_decoder(PROTO_LAYER, NL_TYPE_UDP) != NULL, "Could not find UDP decoder.");
 }
 END_TEST
 

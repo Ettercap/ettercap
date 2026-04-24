@@ -53,7 +53,7 @@ FUNC_DECODER(decode_cook)
    FUNC_DECODER_PTR(next_decoder);
    u_int16 proto;
    u_int16 pck_type;
-   char bogus_mac[6]="\x00\x01\x00\x01\x00\x01";
+   uint8_t bogus_mac[6]={0x00, 0x01, 0x00, 0x01, 0x00, 0x01};
 
    DECODED_LEN = COOKED_LEN;
    proto = pntos(DECODE_DATA + PROTO_OFFSET);

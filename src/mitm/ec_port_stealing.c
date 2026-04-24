@@ -114,7 +114,7 @@ static int port_stealing_start(char *args)
    struct eth_header *heth;
    struct arp_header *harp;
    char *p;
-   char bogus_mac[6]="\x00\xe7\x7e\xe7\x7e\xe7";
+   uint8_t bogus_mac[6]={0x00, 0xe7, 0x7e, 0xe7, 0x7e, 0xe7};
    
    DEBUG_MSG("port_stealing_start");
    USER_MSG("\nPort Stealing: starting...\n\n");

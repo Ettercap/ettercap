@@ -149,22 +149,23 @@ uncomment #define below if you want to see all contacts status changes - be care
 
 /* globals */
 
-#define GG_LOGIN50_CMD		0x0000000c
-#define GG_LOGIN60_CMD		0x00000015
-#define GG_LOGIN70_CMD		0x00000019
+#define GG_LOGIN50_CMD	   0x0000000c
+#define GG_LOGIN60_CMD	   0x00000015
+#define GG_LOGIN70_CMD	   0x00000019
 
-#define GG_WELCOME_CMD		0x00000001
+#define GG_WELCOME_CMD	   0x00000001
 
-#define GG_SEND_MSG_CMD		0x0000000b
-#define GG_RECV_MSG_CMD		0x0000000a
+#define GG_SEND_MSG_CMD	   0x0000000b
+#define GG_RECV_MSG_CMD	   0x0000000a
 
 #define GG_NEW_STATUS_CMD  0x00000002
 
 #define GG_STATUS_CMD      0x00000002
 
-#define GG_STATUS50_CMD		0x0000000c
+#define GG_STATUS50_CMD	   0x0000000c
 #define GG_STATUS60_CMD    0x0000000f
 #define GG_STATUS70_CMD    0x00000017
+#define GG_MAX_LEN         70
 
 struct gg_hdr {
    u_int32 type;
@@ -182,7 +183,7 @@ struct gg_login50_hdr {
    u_int32 version;   
    u_int8 local_ip[4];  
    u_int16 local_port;
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -198,7 +199,7 @@ struct gg_login60_hdr {
    u_int16 remote_port;
    u_int8 image_size;
    u_int8 unknown2;          /* 0xbe */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -217,7 +218,7 @@ struct gg_login70_hdr {
    u_int16 remote_port;
    u_int8 image_size;
    u_int8 unknown5;          /* 0xbe */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -238,14 +239,14 @@ struct gg_recv_msg_hdr {
 
 struct gg_new_status_hdr {
    u_int32 status;
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 };
 
 struct gg_status_hdr {
    u_int32 uin;
    u_int32 status;
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 };
 
@@ -256,7 +257,7 @@ struct gg_status50_hdr {
    u_int16 remote_port;
    u_int32 version;   
    u_int16 unknown1;         /* remote port again? */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -268,7 +269,7 @@ struct gg_status60_hdr {
    u_int8 version;   
    u_int8 image_size;
    u_int8 unknown1;          /* 0x00 */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));;
 
@@ -281,7 +282,7 @@ struct gg_status70_hdr {
    u_int8 image_size;
    u_int8 unknown1;          /* 0x00 */
    u_int32 unknown2;         /* 0x00 */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));;
 

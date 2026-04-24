@@ -144,9 +144,11 @@ void daemon_interface(void)
    LIST_FOREACH_SAFE(plugin, &EC_GBL_OPTIONS->plugins, next, tmp) {
       /* check if the plugin exists */
       if (search_plugin(plugin->name) != E_SUCCESS)
+      {
          plugin->exists = false;
          USER_MSG("Sorry, plugin '%s' can not be found - skipping!\n\n", 
                plugin->name);
+      }
    }
    
    /* build the list of active hosts */

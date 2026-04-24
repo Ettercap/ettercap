@@ -887,9 +887,13 @@ static void http_send(struct http_connection *connection, struct packet_object *
    curl_easy_setopt(connection->handle, CURLOPT_COOKIEFILE, ""); //Initialize cookie engine
 
    /* Only allow HTTP and HTTPS */
+#if LIBCURL_VERSION_NUM >= 0x075500
    curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS_STR, "http,https");
    curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
-
+#else
+   curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS, (long) CURLPROTO_HTTP | (long)CURLPROTO_HTTPS);
+   curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS, (long) CURLPROTO_HTTP | (long) CURLPROTO_HTTPS);
+#endif
 
    if(connection->request->method == HTTP_POST) {
       curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);

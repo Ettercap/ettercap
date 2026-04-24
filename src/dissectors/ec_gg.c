@@ -360,7 +360,7 @@ if ((gg->type == GG_LOGIN50_CMD) && !FROM_SERVER("gg", PACKET)) {
    gg_get_status(gg_login50->status,tbuf);
    gg_get_version(gg_login50->version,tbuf3);
    size_t offset=22;
-   if (gg->len-offset < 0)
+   if (gg->len < offset)
        return NULL;
    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
    strncpy(tbuf2,gg_login50->description, copy_len);
@@ -384,7 +384,7 @@ else if (gg->type == GG_LOGIN60_CMD) {
    gg_get_status(gg_login60->status,tbuf);
    gg_get_version(gg_login60->version,tbuf3);
    size_t offset=31;
-   if (gg->len-offset < 0)
+   if (gg->len < offset)
        return NULL;
    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
    strncpy(tbuf2,gg_login60->description, copy_len);
@@ -410,7 +410,7 @@ else if (gg->type == GG_LOGIN70_CMD) {
    gg_get_status(gg_login70->status,tbuf);
    gg_get_version(gg_login70->version,tbuf3);
    size_t offset=92;
-   if (gg->len-offset < 0)
+   if (gg->len < offset)
        return NULL;
    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
    strncpy(tbuf2,gg_login70->description, copy_len);
@@ -461,7 +461,7 @@ else if (gg->type == GG_WELCOME_CMD) {
 else if ((gg->type == GG_STATUS_CMD) && FROM_SERVER("gg", PACKET)) {
     gg_get_status(gg_status->status,tbuf);
     size_t offset=8;
-    if (gg->len-offset < 0)
+    if (gg->len < offset)
         return NULL;
     size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
     strncpy(tbuf2,gg_status->description, copy_len);
@@ -477,7 +477,7 @@ else if ((gg->type == GG_STATUS_CMD) && FROM_SERVER("gg", PACKET)) {
 else if ((gg->type == GG_NEW_STATUS_CMD) && !FROM_SERVER("gg", PACKET)) {
       gg_get_status(gg_new_status->status,tbuf);
       size_t offset=4;
-      if (gg->len-offset < 0)
+      if (gg->len < offset)
           return NULL;
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       strncpy(tbuf2,gg_new_status->description, copy_len);
@@ -493,7 +493,7 @@ else if ((gg->type == GG_STATUS50_CMD) && FROM_SERVER("gg", PACKET)) {
       gg_get_status(gg_status50->status,tbuf);
       gg_get_version(gg_status50->version,tbuf3);
       size_t offset=20;
-      if (gg->len-offset < 0)
+      if (gg->len < offset)
           return NULL;
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       strncpy(tbuf2,gg_status50->description, copy_len);
@@ -512,7 +512,7 @@ else if (gg->type == GG_STATUS60_CMD) {
       gg_get_status(gg_status60->status,tbuf);
       gg_get_version(gg_status60->version,tbuf3);
       size_t offset=14;
-      if (gg->len-offset < 0)
+      if (gg->len < offset)
           return NULL;
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       strncpy(tbuf2,gg_status60->description, copy_len);
@@ -530,7 +530,7 @@ else if (gg->type == GG_STATUS60_CMD) {
 else if (gg->type == GG_STATUS70_CMD) {
       gg_get_status(gg_status70->status,tbuf);
       size_t offset=18;
-      if (gg->len-offset < 0)
+      if (gg->len < offset)
           return NULL;
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       gg_get_version(gg_status70->version,tbuf3);

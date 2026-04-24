@@ -776,7 +776,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
    char *r = (char*)po->DATA.data;
 
    //Skip the first line of request
-   if ((r = strstr((const char*)po->DATA.data, "\r\n")) == NULL)
+   if ((r = strstr((char*)po->DATA.data, "\r\n")) == NULL)
       return; // This doesn't seem to look as a HTTP header
 
    r += 2; //Skip \r\n

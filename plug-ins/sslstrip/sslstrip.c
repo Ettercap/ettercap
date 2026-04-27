@@ -776,7 +776,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
    char *r = (char*)po->DATA.data;
 
    //Skip the first line of request
-   if ((r = strstr((const char*)po->DATA.data, "\r\n")) == NULL)
+   if ((r = strstr((char*)po->DATA.data, "\r\n")) == NULL)
       return; // This doesn't seem to look as a HTTP header
 
    r += 2; //Skip \r\n
@@ -887,11 +887,13 @@ static void http_send(struct http_connection *connection, struct packet_object *
    curl_easy_setopt(connection->handle, CURLOPT_COOKIEFILE, ""); //Initialize cookie engine
 
    /* Only allow HTTP and HTTPS */
-   curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS, (long) CURLPROTO_HTTP | 
-                  (long)CURLPROTO_HTTPS);
-   curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS, (long) CURLPROTO_HTTP | 
-                  (long) CURLPROTO_HTTPS);
-
+#if LIBCURL_VERSION_NUM >= 0x075500
+   curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS_STR, "http,https");
+   curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+#else
+   curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS, (long) CURLPROTO_HTTP | (long)CURLPROTO_HTTPS);
+   curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS, (long) CURLPROTO_HTTP | (long) CURLPROTO_HTTPS);
+#endif
 
    if(connection->request->method == HTTP_POST) {
       curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);

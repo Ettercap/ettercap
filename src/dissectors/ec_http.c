@@ -161,13 +161,13 @@ FUNC_DECODER(dissector_http)
       /* Check Proxy or WWW auth first
        * then password in the GET or POST.
        */
-      if ((from_here = strstr((const char*)ptr, "Authorization: Passport")) && 
+      if ((from_here = strstr((char*)ptr, "Authorization: Passport")) && 
          Parse_Passport_Auth(from_here + strlen("Authorization: Passport"), PACKET));       
-      else if ((from_here = strstr((const char*)ptr, ": NTLM ")) && 
+      else if ((from_here = strstr((char*)ptr, ": NTLM ")) && 
          Parse_NTLM_Auth((char*)ptr, from_here + strlen(": NTLM "), PACKET));
-      else if ((from_here = strstr((const char*)ptr, ": Basic ")) &&
+      else if ((from_here = strstr((char*)ptr, ": Basic ")) &&
          Parse_Basic_Auth((char*)ptr, from_here  + strlen(": Basic "), PACKET));
-      else if ((from_here = strstr((const char*)ptr, "User-Agent: ")) &&
+      else if ((from_here = strstr((char*)ptr, "User-Agent: ")) &&
           Parse_User_Agent(end, from_here + strlen("User-Agent: "), PACKET));
       else if (!strncmp((const char*)ptr, "GET ", 4))
          Parse_Method_Get((char*)ptr + strlen("GET "), PACKET);
@@ -199,7 +199,7 @@ FUNC_DECODER(dissector_http)
           * packet as HTTP header? Otherwise put these lines
           * out from the if (decrease performances, checks all pcks)
           */
-         if ((from_here = strstr((const char*)ptr, ": NTLM "))) 
+         if ((from_here = strstr((char*)ptr, ": NTLM "))) 
             Parse_NTLM_Auth((char*)ptr, from_here + strlen(": NTLM "), PACKET);
       }
    }

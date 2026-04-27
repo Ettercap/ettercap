@@ -177,7 +177,7 @@ FUNC_DECODER(dissector_ssh)
          /* Only if we are interested on key substitution */         
          if (EC_GBL_CONF->aggressive_dissectors && !EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read) {
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_ssh));
-            SAFE_CALLOC(s->data, sizeof(ssh_session_data), 1);
+            SAFE_CALLOC(s->data, 1, sizeof(ssh_session_data));
             session_put(s);
             session_data =(ssh_session_data *)s->data;
             session_data->status = WAITING_CLIENT_BANNER;

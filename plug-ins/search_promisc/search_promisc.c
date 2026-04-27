@@ -118,7 +118,7 @@ static EC_THREAD_FUNC(search_promisc_thread)
    
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
-   u_char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
+   uint8_t bogus_mac[2][6] = {{0xfd, 0xfd, 0x00, 0x00, 0x00, 0x00},{0xff, 0xff, 0x00, 0x00, 0x00, 0x00}};
    char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
  

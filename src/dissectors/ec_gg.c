@@ -149,22 +149,23 @@ uncomment #define below if you want to see all contacts status changes - be care
 
 /* globals */
 
-#define GG_LOGIN50_CMD		0x0000000c
-#define GG_LOGIN60_CMD		0x00000015
-#define GG_LOGIN70_CMD		0x00000019
+#define GG_LOGIN50_CMD	   0x0000000c
+#define GG_LOGIN60_CMD	   0x00000015
+#define GG_LOGIN70_CMD	   0x00000019
 
-#define GG_WELCOME_CMD		0x00000001
+#define GG_WELCOME_CMD	   0x00000001
 
-#define GG_SEND_MSG_CMD		0x0000000b
-#define GG_RECV_MSG_CMD		0x0000000a
+#define GG_SEND_MSG_CMD	   0x0000000b
+#define GG_RECV_MSG_CMD	   0x0000000a
 
 #define GG_NEW_STATUS_CMD  0x00000002
 
 #define GG_STATUS_CMD      0x00000002
 
-#define GG_STATUS50_CMD		0x0000000c
+#define GG_STATUS50_CMD	   0x0000000c
 #define GG_STATUS60_CMD    0x0000000f
 #define GG_STATUS70_CMD    0x00000017
+#define GG_MAX_LEN         70
 
 struct gg_hdr {
    u_int32 type;
@@ -182,7 +183,7 @@ struct gg_login50_hdr {
    u_int32 version;   
    u_int8 local_ip[4];  
    u_int16 local_port;
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -198,7 +199,7 @@ struct gg_login60_hdr {
    u_int16 remote_port;
    u_int8 image_size;
    u_int8 unknown2;          /* 0xbe */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -217,7 +218,7 @@ struct gg_login70_hdr {
    u_int16 remote_port;
    u_int8 image_size;
    u_int8 unknown5;          /* 0xbe */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -238,14 +239,14 @@ struct gg_recv_msg_hdr {
 
 struct gg_new_status_hdr {
    u_int32 status;
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 };
 
 struct gg_status_hdr {
    u_int32 uin;
    u_int32 status;
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 };
 
@@ -256,7 +257,7 @@ struct gg_status50_hdr {
    u_int16 remote_port;
    u_int32 version;   
    u_int16 unknown1;         /* remote port again? */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));
 
@@ -268,7 +269,7 @@ struct gg_status60_hdr {
    u_int8 version;   
    u_int8 image_size;
    u_int8 unknown1;          /* 0x00 */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));;
 
@@ -281,7 +282,7 @@ struct gg_status70_hdr {
    u_int8 image_size;
    u_int8 unknown1;          /* 0x00 */
    u_int32 unknown2;         /* 0x00 */
-   char description[71];     /* 70+1 (0x0) */
+   char description[GG_MAX_LEN + 1];     /* 70+1 (0x0) */
    u_int32 time;
 }__attribute__ ((packed));;
 
@@ -358,10 +359,12 @@ FUNC_DECODER(dissector_gg)
 if ((gg->type == GG_LOGIN50_CMD) && !FROM_SERVER("gg", PACKET)) {
    gg_get_status(gg_login50->status,tbuf);
    gg_get_version(gg_login50->version,tbuf3);
-   if ((int)gg->len-22 < 0)
+   size_t offset=22;
+   if (gg->len < offset)
        return NULL;
-   strncpy(tbuf2,gg_login50->description, (gg->len)-22);
-   tbuf2[(gg->len)-22]='\0';
+   size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+   strncpy(tbuf2,gg_login50->description, copy_len);
+   tbuf2[copy_len]='\0';
    sprintf(user,"%u",gg_login50->uin);
    PACKET->DISSECTOR.user = strdup(user);
    sprintf(pass,"%u",gg_login50->hash);
@@ -380,10 +383,12 @@ if ((gg->type == GG_LOGIN50_CMD) && !FROM_SERVER("gg", PACKET)) {
 else if (gg->type == GG_LOGIN60_CMD) {
    gg_get_status(gg_login60->status,tbuf);
    gg_get_version(gg_login60->version,tbuf3);
-   if ((int)gg->len-31 < 0)
+   size_t offset=31;
+   if (gg->len < offset)
        return NULL;
-   strncpy(tbuf2,gg_login60->description, (gg->len)-31);
-   tbuf2[(gg->len)-31]='\0';
+   size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+   strncpy(tbuf2,gg_login60->description, copy_len);
+   tbuf2[copy_len]='\0';
    sprintf(user,"%u",gg_login60->uin);
    PACKET->DISSECTOR.user = strdup(user);
    sprintf(pass,"%u",gg_login60->hash);
@@ -404,10 +409,12 @@ else if (gg->type == GG_LOGIN60_CMD) {
 else if (gg->type == GG_LOGIN70_CMD) {
    gg_get_status(gg_login70->status,tbuf);
    gg_get_version(gg_login70->version,tbuf3);
-   if ((int)gg->len-92 < 0)
+   size_t offset=92;
+   if (gg->len < offset)
        return NULL;
-   strncpy(tbuf2,gg_login70->description, (gg->len)-92);
-   tbuf2[(gg->len)-92]='\0';
+   size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+   strncpy(tbuf2,gg_login70->description, copy_len);
+   tbuf2[copy_len]='\0';
    sprintf(user,"%u",gg_login70->uin);
    PACKET->DISSECTOR.user = strdup(user);
    sprintf(pass,"%X%X%X%X%X",gg_login70->hash[0],gg_login70->hash[1],gg_login70->hash[2],gg_login70->hash[3],gg_login70->hash[4]);
@@ -453,10 +460,12 @@ else if (gg->type == GG_WELCOME_CMD) {
 #ifdef GG_CONTACTS_STATUS_CHANGES
 else if ((gg->type == GG_STATUS_CMD) && FROM_SERVER("gg", PACKET)) {
     gg_get_status(gg_status->status,tbuf);
-    if ((int)gg->len-8 < 0)
+    size_t offset=8;
+    if (gg->len < offset)
         return NULL;
-    strncpy(tbuf2,gg_status->description, (gg->len)-8);
-    tbuf2[(gg->len)-8]='\0';
+    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+    strncpy(tbuf2,gg_status->description, copy_len);
+    tbuf2[copy_len]='\0';
     DISSECT_MSG("GG : %s:%d -> %s:%d - STATUS CHANGED  UIN: %u  STATUS: %s (%s)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                  ntohs(PACKET->L4.src),
                                  ip_addr_ntoa(&PACKET->L3.dst, tmp2),
@@ -467,10 +476,12 @@ else if ((gg->type == GG_STATUS_CMD) && FROM_SERVER("gg", PACKET)) {
 #endif
 else if ((gg->type == GG_NEW_STATUS_CMD) && !FROM_SERVER("gg", PACKET)) {
       gg_get_status(gg_new_status->status,tbuf);
-      if ((int)gg->len-4 < 0)
+      size_t offset=4;
+      if (gg->len < offset)
           return NULL;
-      strncpy(tbuf2,gg_new_status->description, (gg->len)-4);
-      tbuf2[(gg->len)-4]='\0';
+      size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+      strncpy(tbuf2,gg_new_status->description, copy_len);
+      tbuf2[copy_len]='\0';
       DISSECT_MSG("GG : %s:%d -> %s:%d - NEW STATUS  STATUS: %s (%s)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                  ntohs(PACKET->L4.src),
                                  ip_addr_ntoa(&PACKET->L3.dst, tmp2),
@@ -481,10 +492,12 @@ else if ((gg->type == GG_NEW_STATUS_CMD) && !FROM_SERVER("gg", PACKET)) {
 else if ((gg->type == GG_STATUS50_CMD) && FROM_SERVER("gg", PACKET)) {
       gg_get_status(gg_status50->status,tbuf);
       gg_get_version(gg_status50->version,tbuf3);
-      if ((int)gg->len-20 < 0)
+      size_t offset=20;
+      if (gg->len < offset)
           return NULL;
-      strncpy(tbuf2,gg_status50->description, (gg->len)-20);
-      tbuf2[(gg->len)-20]='\0';
+      size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+      strncpy(tbuf2,gg_status50->description, copy_len);
+      tbuf2[copy_len]='\0';
       DISSECT_MSG("GG4/5 : %s:%d -> %s:%d - STATUS CHANGED  UIN: %u  STATUS: %s (%s)  VERSION: %s  RIP: %u.%u.%u.%u:%u\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                  ntohs(PACKET->L4.src),
                                  ip_addr_ntoa(&PACKET->L3.dst, tmp2),
@@ -498,10 +511,12 @@ else if ((gg->type == GG_STATUS50_CMD) && FROM_SERVER("gg", PACKET)) {
 else if (gg->type == GG_STATUS60_CMD) {
       gg_get_status(gg_status60->status,tbuf);
       gg_get_version(gg_status60->version,tbuf3);
-      if ((int)gg->len-14 < 0)
+      size_t offset=14;
+      if (gg->len < offset)
           return NULL;
-      strncpy(tbuf2,gg_status60->description, (gg->len)-14);
-      tbuf2[(gg->len)-14]='\0';
+      size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
+      strncpy(tbuf2,gg_status60->description, copy_len);
+      tbuf2[copy_len]='\0';
       DISSECT_MSG("GG6 : %s:%d -> %s:%d - STATUS CHANGED  UIN: %u  STATUS: %s (%s)  VERSION: %s  RIP: %u.%u.%u.%u:%u\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                  ntohs(PACKET->L4.src),
                                  ip_addr_ntoa(&PACKET->L3.dst, tmp2),
@@ -514,11 +529,13 @@ else if (gg->type == GG_STATUS60_CMD) {
 }
 else if (gg->type == GG_STATUS70_CMD) {
       gg_get_status(gg_status70->status,tbuf);
-      if ((int)gg->len-18 < 0)
+      size_t offset=18;
+      if (gg->len < offset)
           return NULL;
+      size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       gg_get_version(gg_status70->version,tbuf3);
-      strncpy(tbuf2,gg_status70->description, (gg->len)-18);
-      tbuf2[(gg->len)-18]='\0';
+      strncpy(tbuf2,gg_status70->description, copy_len);
+      tbuf2[copy_len]='\0';
       DISSECT_MSG("GG7 : %s:%d -> %s:%d - STATUS CHANGED  UIN: %u  STATUS: %s (%s)  VERSION: %s  RIP: %u.%u.%u.%u:%u\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                  ntohs(PACKET->L4.src),
                                  ip_addr_ntoa(&PACKET->L3.dst, tmp2),

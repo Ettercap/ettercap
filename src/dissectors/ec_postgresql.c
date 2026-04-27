@@ -66,7 +66,7 @@ void postgresql_init(void);
         | ( (unsigned long) (b)[(i) + 3]       );       \
 }
 
-static char itoa16[16] =  "0123456789abcdef";
+static char itoa16[17] =  "0123456789abcdef";
 
 static inline void hex_encode(unsigned char *str, int len, unsigned char *out)
 {

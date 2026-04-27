@@ -50,7 +50,7 @@ void vnc_init(void);
 
 /************************************************/
 
-static char itoa16[16] =  "0123456789abcdef";
+static char itoa16[17] =  "0123456789abcdef";
 
 static inline void hex_encode(unsigned char *str, int len, unsigned char *out)
 {

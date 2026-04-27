@@ -167,14 +167,14 @@ FUNC_DECODER(dissector_ospf)
         }
 
         for (i=0; i<length; i++) {
-           if (ptr+i == NULL)
+           if (*(ptr+i) == '\0')
               return NULL;
 
            DISSECT_MSG("%02x", *(ptr+i));
         }
         DISSECT_MSG("$");
         for (i=length; i<length+auth_data_len; i++) {
-           if (ptr+i == NULL)
+           if (*(ptr+i) == '\0')
               return NULL;
 
            DISSECT_MSG("%02x", *(ptr+i));

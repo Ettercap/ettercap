@@ -28,7 +28,7 @@
 
 /* proto */
 
-static void gtkui_load_plugin(const char *full);
+static void gtkui_load_plugin(char *full);
 static void gtkui_add_plugin(char active, struct plugin_ops *ops);
 static void gtkui_plug_destroy(void);
 static void gtkui_plugins_detach(GtkWidget *child);
@@ -104,7 +104,7 @@ void gtkui_plugin_load(GSimpleAction *action, GVariant *value, gpointer data)
    gtk_widget_destroy (dialog);
 }
 
-static void gtkui_load_plugin(const char *full)
+static void gtkui_load_plugin(char *full)
 {
    char *file;
    int ret;

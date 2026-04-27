@@ -163,7 +163,7 @@ FUNC_DECODER(dissector_rip)
                 ntohs(PACKET->L4.dst));
 
            for (i = 0; i < rip_packet_len + RIP_HEADER_SIZE; i++) {
-                if (ptr + i == NULL)
+                if (*(ptr + i) == '\0')
                         return NULL;
 
                 DISSECT_MSG("%02x", *(ptr+i));
@@ -171,7 +171,7 @@ FUNC_DECODER(dissector_rip)
            DISSECT_MSG("$");
            for (i = rip_packet_len + RIP_HEADER_SIZE; i < rip_packet_len + \
                         RIP_HEADER_SIZE + RIP_AUTH_MD5_SIZE; i++) {
-                if (ptr + i == NULL)
+                if (*(ptr + i) == '\0')
                         return NULL;
 
                 DISSECT_MSG("%02x", *(ptr+i));

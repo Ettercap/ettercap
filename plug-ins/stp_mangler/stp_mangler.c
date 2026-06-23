@@ -62,8 +62,8 @@ struct stp_header
 };
 
 #define FAKE_PCK_LEN 60
-struct packet_object fake_po;
-char fake_pck[FAKE_PCK_LEN];
+struct packet_object stp_fake_po;
+char stp_fake_pck[FAKE_PCK_LEN];
 
 
 /* protos */
@@ -162,9 +162,9 @@ EC_THREAD_FUNC(mangler)
    (void) EC_THREAD_PARAM;
 
    /* Avoid crappy compiler alignment :( */    
-   heth  = (struct eth_header *)fake_pck;
-   hllc  = (struct llc_header *)(fake_pck + 14);
-   hstp  = (struct stp_header *)(fake_pck + 22);
+   heth  = (struct eth_header *)stp_fake_pck;
+   hllc  = (struct llc_header *)(stp_fake_pck + 14);
+   hstp  = (struct stp_header *)(stp_fake_pck + 22);
    
    /* Create a fake STP packet */
    heth->proto = htons(0x0026);
@@ -184,7 +184,7 @@ EC_THREAD_FUNC(mangler)
    hstp->hello_time = htons_inv(2);
    hstp->forward_delay = htons_inv(15);
 
-   packet_create_object(&fake_po, (u_char*)fake_pck, FAKE_PCK_LEN);
+   packet_create_object(&stp_fake_po, (u_char*)stp_fake_pck, FAKE_PCK_LEN);
 
    /* init the thread and wait for start up */
    ec_thread_init();
@@ -193,7 +193,7 @@ EC_THREAD_FUNC(mangler)
       CANCELLATION_POINT();
 
       /* Send on the wire and wait */
-      send_to_L2(&fake_po); 
+      send_to_L2(&stp_fake_po); 
       ec_usleep(SEC2MICRO(1));
    }
    

@@ -53,8 +53,8 @@ struct arp_eth_header {
 };
 
 #define FAKE_PCK_LEN sizeof(struct eth_header)+sizeof(struct arp_header)+sizeof(struct arp_eth_header)
-struct packet_object fake_po;
-char fake_pck[FAKE_PCK_LEN];
+struct packet_object flood_fake_po;
+char flood_fake_pck[FAKE_PCK_LEN];
 
 
 /* protos */
@@ -158,7 +158,7 @@ EC_THREAD_FUNC(flooder)
    srandom(seed.tv_sec ^ seed.tv_usec);
 
    /* Create a fake ARP packet */
-   heth = (struct eth_header *)fake_pck;
+   heth = (struct eth_header *)flood_fake_pck;
    harp = (struct arp_header *)(heth + 1);
 
    heth->proto = htons(LL_TYPE_ARP);
@@ -168,7 +168,7 @@ EC_THREAD_FUNC(flooder)
    harp->ar_pln = 4;
    harp->ar_op  = htons(ARPOP_REQUEST);
 
-   packet_create_object(&fake_po, (u_char*)fake_pck, FAKE_PCK_LEN);
+   packet_create_object(&flood_fake_po, (u_char*)flood_fake_pck, FAKE_PCK_LEN);
 
    /* init the thread and wait for start up */
    ec_thread_init();
@@ -193,7 +193,7 @@ EC_THREAD_FUNC(flooder)
       memcpy(heth->sha, MACS, ETH_ADDR_LEN);
 
       /* Send on the wire and wait */
-      send_to_L2(&fake_po); 
+      send_to_L2(&flood_fake_po); 
 
       ec_usleep(EC_GBL_CONF->port_steal_send_delay);
    }

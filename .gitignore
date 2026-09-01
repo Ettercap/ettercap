@@ -56,3 +56,7 @@ libwdg-*_debug.log
 build/
 include/config.h
 /obj-*/
+
+# GTK4 interface: local build dir and harness test artifacts
+build-gtk4/
+build-gtk4-artifacts/

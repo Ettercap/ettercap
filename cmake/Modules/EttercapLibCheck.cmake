@@ -29,7 +29,7 @@ endif()
 
 
 if(ENABLE_GTK)
-    set(VALID_GTK_TYPES GTK2 GTK3)
+    set(VALID_GTK_TYPES GTK2 GTK3 GTK4)
     if(NOT DEFINED GTK_BUILD_TYPE)
         message(STATUS "No GTK_BUILD_TYPE defined, default is GTK3")
         set(GTK_BUILD_TYPE GTK3 CACHE STRING
@@ -43,6 +43,41 @@ if(ENABLE_GTK)
         message(FATAL_ERROR "Unknown GTK_BUILD_TYPE: '${GTK_BUILD_TYPE}'. Valid options are: ${VALID_GTK_TYPES}")
     endif()
     unset(contains_valid)
+    if(GTK_BUILD_TYPE STREQUAL GTK4)
+        # libadwaita 1.5 is the real gate here: it is what provides AdwDialog
+        # and AdwAlertDialog, which is how the GTK4 interface replaces the
+        # synchronous gtk_dialog_run() calls that GTK4 removed. It in turn
+        # requires GTK >= 4.13.4, so the GTK version check below is really
+        # only there to produce a friendlier message on older systems.
+        #
+        # This combination is what Ubuntu 24.04 LTS and Debian 13 ship.
+        find_package(GTK4 4.12 REQUIRED gtk adwaita)
+        if(NOT GTK4_FOUND)
+            message(FATAL_ERROR
+"You chose to build against GTK4, but it was not found.
+Please install the GTK4 development files, or build against GTK3.")
+        endif()
+        if(NOT ADWAITA_FOUND)
+            message(FATAL_ERROR
+"You chose to build against GTK4, but libadwaita-1 was not found.
+The GTK4 interface depends on libadwaita >= 1.5.
+Please install the libadwaita development files, or build against GTK3.")
+        endif()
+        if(ADWAITA_VERSION VERSION_LESS 1.5)
+            message(FATAL_ERROR
+"Your version of libadwaita (${ADWAITA_VERSION}) is too old.
+The GTK4 interface requires libadwaita >= 1.5 for AdwDialog/AdwAlertDialog.
+Please upgrade it, or build against GTK3.")
+        endif()
+        message(STATUS
+          "Building GTK4 interface against GTK ${GTK4_VERSION} / libadwaita ${ADWAITA_VERSION}")
+        set(HAVE_GTK4 1)
+        set(EC_INTERFACES_LIBS ${EC_INTERFACES_LIBS} ${GTK4_LIBRARIES})
+        set(EC_INCLUDE ${EC_INCLUDE} ${GTK4_INCLUDE_DIRS})
+        include_directories(${GTK4_INCLUDE_DIRS})
+        link_directories(${GTK4_LIBRARY_DIRS})
+        add_compile_options(${GTK4_CFLAGS_OTHER})
+    endif()
     if(GTK_BUILD_TYPE STREQUAL GTK3)
         set(GTK3_FIND_VERSION 1)
         find_package(GTK3 3.12.0)

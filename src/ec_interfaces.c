@@ -30,6 +30,9 @@
 #if defined HAVE_GTK3
    #include <ec_gtk3.h>
 #endif
+#if defined HAVE_GTK4
+   #include <ec_gtk4.h>
+#endif
 
 #include <ec_text.h>
 
@@ -67,7 +70,7 @@ void select_curses_interface(void)
 void select_gtk_interface(void)
 {
    DEBUG_MSG("select_gtk_interface");
-#if defined HAVE_GTK || defined HAVE_GTK3 || defined HAVE_GTK3COMPAT
+#if defined HAVE_GTK || defined HAVE_GTK3 || defined HAVE_GTK3COMPAT || defined HAVE_GTK4
    set_gtk_interface();
 #else
    FATAL_ERROR("GTK support is not compiled in %s", EC_GBL_PROGRAM);

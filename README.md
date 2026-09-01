@@ -54,11 +54,18 @@ code, btw fixes and patches are welcome.**
 - To enable plugins: `libltdl` (part of libtool)
 - To have perl regexp in the filters: `libpcre`
 - For the cursed GUI: `ncurses` >= 5.3
-- For the GTK+ GUI:
-  - `Glib`      >= 2.2.2
-  - `Gtk+3`    >= 3.12.0 (recommended >= 3.22.0)
-  - `Atk`       >= 1.2.4
-  - `Pango`     >= 1.2.3
+- For the GTK GUI, pick one toolkit with `-DGTK_BUILD_TYPE=` (default `GTK3`):
+  - `GTK3` (default) — `-DGTK_BUILD_TYPE=GTK3`:
+    - `Glib`   >= 2.2.2
+    - `Gtk+3`  >= 3.12.0 (recommended >= 3.22.0)
+    - `Atk`    >= 1.2.4
+    - `Pango`  >= 1.2.3
+  - `GTK4` + libadwaita — `-DGTK_BUILD_TYPE=GTK4`:
+    - `Gtk4`       >= 4.12
+    - `libadwaita` >= 1.5
+    - Requires a reasonably recent distribution (e.g. Ubuntu >= 24.04,
+      Debian >= 13, Fedora >= 39); older releases ship libadwaita < 1.5.
+  - `GTK2` is still selectable (`-DGTK_BUILD_TYPE=GTK2`) but deprecated.
 
 > [!TIP]
 > If you are running on debian, or any debian based distro you can install
@@ -68,6 +75,14 @@ the required dependencies by running:
 > apt-get install build-essential debhelper bison check cmake flex groff libbsd-dev \
 >      libcurl4-openssl-dev libmaxminddb-dev libgtk-3-dev libltdl-dev libluajit-5.1-dev \
 >      libncurses5-dev libnet1-dev libpcap-dev libpcre2-dev libssl-dev
+> ```
+>
+> For the GTK4 interface (`-DGTK_BUILD_TYPE=GTK4`) install `libgtk-4-dev` and
+> `libadwaita-1-dev` instead of (or in addition to) `libgtk-3-dev`. These are
+> only available on Ubuntu >= 24.04 / Debian >= 13:
+>
+> ```
+> apt-get install libgtk-4-dev libadwaita-1-dev
 > ```
 
 ## LICENSE

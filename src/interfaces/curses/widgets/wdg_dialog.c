@@ -177,13 +177,15 @@ static int wdg_dialog_redraw(struct wdg_object *wo)
       mvwin(ww->win, y, x);
       wresize(ww->win, l, c);
       wdg_dialog_border(wo);
-      wdg_dialog_buttons(wo);
-      
+
       /* resize the actual window and touch it */
       mvwin(ww->sub, y + 2, x + 2);
       wresize(ww->sub, l - 4, c - 4);
       /* set the window color */
       wbkgdset(ww->sub, COLOR_PAIR(wo->window_color));
+
+      /* the buttons live in ww->sub, so draw them at the new size */
+      wdg_dialog_buttons(wo);
 
    /* the first time we have to allocate the window */
    } else {
@@ -192,18 +194,21 @@ static int wdg_dialog_redraw(struct wdg_object *wo)
       if ((ww->win = newwin(l, c, y, x)) == NULL)
          return -WDG_E_FATAL;
 
-      /* draw the borders */
-      wdg_dialog_border(wo);
-      wdg_dialog_buttons(wo);
-
-      /* create the inner (actual) window */
+      /*
+       * create the inner (actual) window before drawing anything into
+       * it -- wdg_dialog_buttons() writes to ww->sub
+       */
       if ((ww->sub = newwin(l - 4, c - 4, y + 2, x + 2)) == NULL)
          return -WDG_E_FATAL;
-      
+
       /* set the window color */
       wbkgdset(ww->sub, COLOR_PAIR(wo->window_color));
       werase(ww->sub);
       redrawwin(ww->sub);
+
+      /* draw the borders */
+      wdg_dialog_border(wo);
+      wdg_dialog_buttons(wo);
 
    }
   
@@ -431,7 +436,16 @@ static void wdg_dialog_buttons(struct wdg_object *wo)
    /* no button to be displayed */
    if (ww->flags == WDG_NO_BUTTONS)
       return;
-   
+
+   /*
+    * never let a NULL window reach wprintw(): ncurses derives the screen
+    * from the window, so a single wprintw(NULL, ...) leaves its internal
+    * formatting buffer unusable and *every* later wprintw() in the
+    * process silently returns ERR without drawing anything.
+    */
+   if (ww->sub == NULL)
+      return;
+
    /* get the line of the message */
    wdg_dialog_get_size(wo, &l, &c);
 

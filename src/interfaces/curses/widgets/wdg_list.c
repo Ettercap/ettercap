@@ -37,6 +37,7 @@ struct wdg_list_call {
 struct wdg_list_handle {
    MENU *menu;
    WINDOW *mwin;
+   WINDOW *msub;
    WINDOW *win;
    ITEM *current;
    ITEM **items;
@@ -64,6 +65,10 @@ static void wdg_list_menu_create(struct wdg_object *wo);
 static void wdg_list_menu_destroy(struct wdg_object *wo);
 
 static int wdg_list_callback(struct wdg_object *wo, int key);
+
+/* implemented in wdg.c */
+extern WINDOW * wdg_derwin(WINDOW *parent, int lines, int cols, int begin_y, int begin_x);
+extern void wdg_delderwin(WINDOW *parent, WINDOW *sub);
 
 /*******************************************/
 
@@ -441,9 +446,14 @@ static void wdg_list_menu_create(struct wdg_object *wo)
    
    /* associate with the menu */
    set_menu_win(ww->menu, ww->mwin);
-   
-   /* the subwin for the menu */
-   set_menu_sub(ww->menu, derwin(ww->mwin, mrows + 1, mcols, 2, 2));
+
+   /*
+    * the subwin for the menu.
+    * it must fit entirely within mwin, otherwise derwin() returns NULL
+    * and ncurses silently posts the menu on stdscr, wiping the screen.
+    */
+   ww->msub = wdg_derwin(ww->mwin, mrows, mcols, 0, 0);
+   set_menu_sub(ww->menu, ww->msub);
 
    /* menu attributes */
    set_menu_mark(ww->menu, "");
@@ -487,6 +497,13 @@ static void wdg_list_menu_destroy(struct wdg_object *wo)
    free_menu(ww->menu);
 
    ww->menu = NULL;
+
+   /* the sub-window has to go before its parent */
+   wdg_delderwin(ww->mwin, ww->msub);
+   ww->msub = NULL;
+
+   delwin(ww->mwin);
+   ww->mwin = NULL;
 }
 
 /*

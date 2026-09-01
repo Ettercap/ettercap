@@ -193,6 +193,62 @@ void wdg_exit(void)
 }
 
 /*
+ * create the sub-window a menu or a form is posted into.
+ *
+ * derwin() refuses (and returns NULL) as soon as the requested geometry
+ * does not fit entirely within the parent window. Handing that NULL to
+ * set_menu_sub() / set_form_sub() is not an error for ncurses: it
+ * normalizes the NULL sub-window to stdscr, so the menu or the form is
+ * silently posted full-screen on stdscr instead of inside its widget.
+ * The next refresh of stdscr then wipes every other widget off the
+ * screen -- the menu bar included.
+ *
+ * So clamp the geometry to the parent, and never return NULL: falling
+ * back to the parent window itself keeps the widget self-contained.
+ */
+WINDOW * wdg_derwin(WINDOW *parent, int lines, int cols, int begin_y, int begin_x)
+{
+   WINDOW *sub;
+   int maxl, maxc;
+
+   if (parent == NULL)
+      return NULL;
+
+   getmaxyx(parent, maxl, maxc);
+
+   /* the offset alone must leave room for at least one line/column */
+   if (begin_y < 0 || begin_y >= maxl)
+      begin_y = 0;
+   if (begin_x < 0 || begin_x >= maxc)
+      begin_x = 0;
+
+   /* clamp the geometry to what is left of the parent */
+   if (lines <= 0 || lines > maxl - begin_y)
+      lines = maxl - begin_y;
+   if (cols <= 0 || cols > maxc - begin_x)
+      cols = maxc - begin_x;
+
+   sub = derwin(parent, lines, cols, begin_y, begin_x);
+
+   WDG_ON_ERROR(sub, NULL, "Cannot create a %dx%d sub-window", cols, lines);
+
+   /* never hand a NULL sub-window to the menu/form library */
+   return (sub != NULL) ? sub : parent;
+}
+
+/*
+ * destroy a sub-window created by wdg_derwin()
+ */
+void wdg_delderwin(WINDOW *parent, WINDOW *sub)
+{
+   /* wdg_derwin() fell back to the parent, nothing of our own to delete */
+   if (sub == NULL || sub == parent)
+      return;
+
+   delwin(sub);
+}
+
+/*
  * update the screen
  */
 void wdg_update_screen(void)

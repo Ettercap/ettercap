@@ -141,16 +141,18 @@ static int wdg_percentage_redraw(struct wdg_object *wo)
       touchwin(ww->win);
       wnoutrefresh(ww->win);
       
-      /* resize the window and draw the new border */
+      /* resize the window */
       mvwin(ww->win, y, x);
       wresize(ww->win, l, c);
-      wdg_percentage_border(wo);
-      
+
       /* resize the actual window and touch it */
       mvwin(ww->sub, y + 1, x + 1);
       wresize(ww->sub, l - 2, c - 2);
       /* set the window color */
       wbkgdset(ww->sub, COLOR_PAIR(wo->window_color));
+
+      /* the title and the bar live in ww->sub, so draw them at the new size */
+      wdg_percentage_border(wo);
 
    /* the first time we have to allocate the window */
    } else {
@@ -159,13 +161,14 @@ static int wdg_percentage_redraw(struct wdg_object *wo)
       if ((ww->win = newwin(l, c, y, x)) == NULL)
          return -WDG_E_FATAL;
 
-      /* draw the borders */
-      wdg_percentage_border(wo);
-
-      /* create the inner (actual) window */
+      /*
+       * create the inner (actual) window before drawing anything into
+       * it -- wdg_percentage_border() writes the title and the bar to
+       * ww->sub
+       */
       if ((ww->sub = newwin(l - 2, c - 2, y + 1, x + 1)) == NULL)
          return -WDG_E_FATAL;
-      
+
       /* set the window color */
       wbkgdset(ww->sub, COLOR_PAIR(wo->window_color));
       werase(ww->sub);
@@ -175,6 +178,9 @@ static int wdg_percentage_redraw(struct wdg_object *wo)
       wmove(ww->sub, 0, 0);
 
       scrollok(ww->sub, TRUE);
+
+      /* draw the borders */
+      wdg_percentage_border(wo);
 
    }
    
@@ -262,7 +268,16 @@ static void wdg_percentage_border(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_percentage, ww);
    size_t c = wdg_get_ncols(wo);
-      
+
+   /*
+    * never let a NULL window reach wprintw(): ncurses derives the screen
+    * from the window, so a single wprintw(NULL, ...) leaves its internal
+    * formatting buffer unusable and *every* later wprintw() in the
+    * process silently returns ERR without drawing anything.
+    */
+   if (ww->win == NULL || ww->sub == NULL)
+      return;
+
    /* the object was focused */
    if (wo->flags & WDG_OBJ_FOCUSED) {
       wattron(ww->win, A_BOLD);

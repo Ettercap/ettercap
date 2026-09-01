@@ -273,7 +273,16 @@ void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...)
 {
    WDG_WO_EXT(struct wdg_window, ww);
    va_list ap;
-   
+
+   /*
+    * never let a NULL window reach vw_printw(): ncurses derives the screen
+    * from the window, so a single printw on a NULL window leaves its
+    * internal formatting buffer unusable and *every* later wprintw() in
+    * the process silently returns ERR without drawing anything.
+    */
+   if (ww->sub == NULL)
+      return;
+
    /* move the pointer */
    wmove(ww->sub, y, x);
    

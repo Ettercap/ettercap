@@ -40,6 +40,7 @@ struct wdg_file_handle {
    WINDOW *win;
    MENU *m;
    WINDOW *mwin;
+   WINDOW *msub;
    ITEM **items;
    size_t nitems;
    int nlist;
@@ -68,6 +69,10 @@ static void wdg_file_menu_create(struct wdg_object *wo);
 static int wdg_file_virtualize(int key);
 static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 static void wdg_file_callback(struct wdg_object *wo, const char *path, char *file);
+
+/* implemented in wdg.c */
+extern WINDOW * wdg_derwin(WINDOW *parent, int lines, int cols, int begin_y, int begin_x);
+extern void wdg_delderwin(WINDOW *parent, WINDOW *sub);
 
 /*******************************************/
 
@@ -425,6 +430,14 @@ static void wdg_file_menu_destroy(struct wdg_object *wo)
    
    unpost_menu(ww->m);
    free_menu(ww->m);
+   ww->m = NULL;
+
+   /* the sub-window has to go before its parent */
+   wdg_delderwin(ww->mwin, ww->msub);
+   ww->msub = NULL;
+
+   delwin(ww->mwin);
+   ww->mwin = NULL;
 
    /* free all the items */
    while(ww->items[i] != NULL) 
@@ -547,9 +560,14 @@ static void wdg_file_menu_create(struct wdg_object *wo)
   
    /* associate with the menu */
    set_menu_win(ww->m, ww->mwin);
-   
-   /* the subwin for the menu */
-   set_menu_sub(ww->m, derwin(ww->mwin, mrows + 1, mcols, 1, 1));
+
+   /*
+    * the subwin for the menu.
+    * it must fit entirely within mwin, otherwise derwin() returns NULL
+    * and ncurses silently posts the menu on stdscr, wiping the screen.
+    */
+   ww->msub = wdg_derwin(ww->mwin, mrows, mcols, 0, 0);
+   set_menu_sub(ww->m, ww->msub);
 
    /* menu attributes */
    set_menu_mark(ww->m, "");

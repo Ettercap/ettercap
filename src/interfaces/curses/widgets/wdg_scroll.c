@@ -350,6 +350,15 @@ void wdg_scroll_print(wdg_t *wo, int color, char *fmt, ...)
    
    WDG_DEBUG_MSG("wdg_scroll_print");
 
+   /*
+    * never let a NULL window reach vw_printw(): ncurses derives the screen
+    * from the window, so a single printw on a NULL window leaves its
+    * internal formatting buffer unusable and *every* later wprintw() in
+    * the process silently returns ERR without drawing anything.
+    */
+   if (ww->sub == NULL)
+      return;
+
    /* move to the bottom of the pad */
    wdg_set_scroll(wo, ww->y_max - l + 1);
 

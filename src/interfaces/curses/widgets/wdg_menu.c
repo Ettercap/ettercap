@@ -42,6 +42,7 @@ struct wdg_menu_unit {
    size_t nitems;
    MENU *m;
    WINDOW *win;
+   WINDOW *sub;
    ITEM **items;
    TAILQ_ENTRY(wdg_menu_unit) next;
 };
@@ -72,6 +73,10 @@ static void wdg_menu_close(struct wdg_object *wo);
 static int wdg_menu_virtualize(int key);
 static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 static int wdg_menu_shortcut(struct wdg_object *wo, int key);
+
+/* implemented in wdg.c */
+extern WINDOW * wdg_derwin(WINDOW *parent, int lines, int cols, int begin_y, int begin_x);
+extern void wdg_delderwin(WINDOW *parent, WINDOW *sub);
 
 /*******************************************/
 
@@ -561,8 +566,13 @@ static void wdg_menu_open(struct wdg_object *wo)
    /* associate with the menu */
    set_menu_win(ww->focus_unit->m, ww->focus_unit->win);
    
-   /* the subwin for the menu */
-   set_menu_sub(ww->focus_unit->m, derwin(ww->focus_unit->win, mrows + 1, mcols, 1, 1));
+   /*
+    * the subwin for the menu -- inset by one to stay within the box.
+    * it must fit entirely within win, otherwise derwin() returns NULL
+    * and ncurses silently posts the menu on stdscr, wiping the screen.
+    */
+   ww->focus_unit->sub = wdg_derwin(ww->focus_unit->win, mrows, mcols, 1, 1);
+   set_menu_sub(ww->focus_unit->m, ww->focus_unit->sub);
 
    /* menu attributes */
    set_menu_mark(ww->focus_unit->m, "");
@@ -609,8 +619,13 @@ static void wdg_menu_close(struct wdg_object *wo)
    free_menu(ww->focus_unit->m);
    ww->focus_unit->m = NULL;
 
+   /* the sub-window has to go before its parent */
+   wdg_delderwin(ww->focus_unit->win, ww->focus_unit->sub);
+   ww->focus_unit->sub = NULL;
+
    delwin(ww->focus_unit->win);
-  
+   ww->focus_unit->win = NULL;
+
    /* repaint the whole screen since a menu might have overlapped something */
    wdg_redraw_all();
 }

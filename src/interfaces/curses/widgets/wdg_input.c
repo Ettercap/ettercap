@@ -32,6 +32,7 @@ struct wdg_input_handle {
    WINDOW *win;
    FORM *form;
    WINDOW *fwin;
+   WINDOW *fsub;
    FIELD **fields;
    size_t nfields;
    size_t x, y;
@@ -57,6 +58,10 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
 static void wdg_input_form_destroy(struct wdg_object *wo);
 static void wdg_input_form_create(struct wdg_object *wo);
 static void wdg_input_consolidate(struct wdg_object *wo);
+
+/* implemented in wdg.c */
+extern WINDOW * wdg_derwin(WINDOW *parent, int lines, int cols, int begin_y, int begin_x);
+extern void wdg_delderwin(WINDOW *parent, WINDOW *sub);
 
 /*******************************************/
 
@@ -427,7 +432,13 @@ static void wdg_input_form_destroy(struct wdg_object *wo)
    unpost_form(ww->form);
    free_form(ww->form);
    ww->form = NULL;
+
+   /* the sub-window has to go before its parent */
+   wdg_delderwin(ww->fwin, ww->fsub);
+   ww->fsub = NULL;
+
    delwin(ww->fwin);
+   ww->fwin = NULL;
 }
 
 /*
@@ -456,16 +467,21 @@ static void wdg_input_form_create(struct wdg_object *wo)
    /* set the color */
    wbkgd(ww->fwin, COLOR_PAIR(wo->window_color));
    keypad(ww->fwin, TRUE);
-  
+
    /* associate with the form */
    set_form_win(ww->form, ww->fwin);
-   
-   /* the subwin for the form */
-   set_form_sub(ww->form, derwin(ww->fwin, mrows + 1, mcols, 1, 1));
+
+   /*
+    * the subwin for the form.
+    * it must fit entirely within fwin, otherwise derwin() returns NULL
+    * and ncurses silently posts the form on stdscr, wiping the screen.
+    */
+   ww->fsub = wdg_derwin(ww->fwin, mrows, mcols, 0, 0);
+   set_form_sub(ww->form, ww->fsub);
 
    /* make the active field in reverse mode */
    set_field_back(current_field(ww->form), A_REVERSE);
-   
+
    /* display the form */
    post_form(ww->form);
 

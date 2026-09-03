@@ -77,6 +77,8 @@ void ec_globals_free(void)
    EC_GBL_FREE(ec_gbls->iface);
    EC_GBL_FREE(ec_gbls->bridge);
    EC_GBL_FREE(ec_gbls->sm);
+   EC_GBL_FREE(ec_gbls->ui);
+   EC_GBL_FREE(ec_gbls->wifi);
    EC_GBL_FREE(ec_gbls->filters);
 
    free_ip_list(ec_gbls->t1);

@@ -146,7 +146,14 @@ static u_int16 v4_checksum(struct packet_object *po)
 static u_int16 v6_checksum(struct packet_object *po)
 {
    u_int8 *buf = po->L4.header;
-   u_int16 plen = po->L3.payload_len;
+   /*
+    * Use the actual upper-layer length (header + data) instead of the
+    * IPv6 payload length.  This is required when the payload has been
+    * modified by a filter, because decode_ip6 has not yet had a chance
+    * to update po->L3.payload_len when the transport checksum is
+    * recalculated.
+    */
+   u_int16 plen = po->L4.len + po->DATA.len;
    u_int32 csum;
 
    csum = sum(buf, plen);

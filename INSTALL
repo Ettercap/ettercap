@@ -32,7 +32,27 @@ doesn't find the particular library it wants, it will build the library, itself.
 # To disable the use of bundled libraries:
   $ cmake -DBUNDLED_LIBS=Off ../
 
-# To disable the searching for system-provided libraries, and use 
+# To disable the searching for system-provided libraries, and use
 # bundled libraries exclusively:
   $ cmake -DSYSTEM_LIBS=Off ../
+
+
+#### Selecting the GTK toolkit
+The GTK GUI can be built against GTK3 (the default), GTK4, or GTK2:
+
+# GTK3 (default) -- needs libgtk-3-dev (Gtk+3 >= 3.12):
+  $ cmake -DGTK_BUILD_TYPE=GTK3 ../
+
+# GTK4 + libadwaita -- needs libgtk-4-dev and libadwaita-1-dev
+# (Gtk4 >= 4.12, libadwaita >= 1.5). libadwaita >= 1.5 provides the
+# AdwDialog/AdwAlertDialog the GTK4 interface relies on, so this build
+# requires a recent distribution (Ubuntu >= 24.04, Debian >= 13,
+# Fedora >= 39). On older releases, use the GTK3 build.
+  $ cmake -DGTK_BUILD_TYPE=GTK4 ../
+
+# GTK2 (deprecated) -- needs libgtk2.0-dev:
+  $ cmake -DGTK_BUILD_TYPE=GTK2 ../
+
+# To build without any GTK GUI at all:
+  $ cmake -DENABLE_GTK=Off ../
 

@@ -51,7 +51,29 @@ if(ENABLE_CURSES)
 endif()
 
 if(ENABLE_GTK)
-  if("${GTK_BUILD_TYPE}" STREQUAL "GTK2" OR "${HAVE_GTK3COMPAT}")
+  if("${GTK_BUILD_TYPE}" STREQUAL "GTK4")
+    include_directories(gtk4)
+    set(EC_GTK_SRC
+      gtk4/ec_gtk4.c
+      gtk4/ec_gtk4_conf.c
+      gtk4/ec_gtk4_dialogs.c
+      gtk4/ec_gtk4_filters.c
+      gtk4/ec_gtk4_help.c
+      gtk4/ec_gtk4_hosts.c
+      gtk4/ec_gtk4_live.c
+      gtk4/ec_gtk4_logging.c
+      gtk4/ec_gtk4_menus.c
+      gtk4/ec_gtk4_mitm.c
+      gtk4/ec_gtk4_offline.c
+      gtk4/ec_gtk4_plugins.c
+      gtk4/ec_gtk4_redirect.c
+      gtk4/ec_gtk4_start.c
+      gtk4/ec_gtk4_targets.c
+      gtk4/ec_gtk4_view.c
+      gtk4/ec_gtk4_view_connections.c
+      gtk4/ec_gtk4_view_profiles.c
+)
+  elseif("${GTK_BUILD_TYPE}" STREQUAL "GTK2" OR "${HAVE_GTK3COMPAT}")
     include_directories(gtk)
     set(EC_GTK_SRC
       gtk/ec_gtk.c

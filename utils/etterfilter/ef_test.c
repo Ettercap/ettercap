@@ -29,8 +29,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 /* protos */
+
+static char *escape_binary(const u_char *s, size_t len);
 
 void test_filter(char *filename);
 
@@ -42,6 +45,54 @@ static void print_dec(struct filter_op *fop, u_int32 eip);
 static void print_function(struct filter_op *fop, u_int32 eip);
 
 /*******************************************/
+
+/*
+ * escape a binary string so it can be safely printed as a C-style string.
+ * caller must SAFE_FREE the returned buffer.
+ */
+static char *escape_binary(const u_char *s, size_t len)
+{
+   char *out = NULL;
+   size_t out_len = 0;
+   size_t out_cap = 0;
+   char hex[5];
+   size_t i;
+
+   if (s == NULL || len == 0) {
+      SAFE_CALLOC(out, 1, sizeof(char));
+      return out;
+   }
+
+   for (i = 0; i < len; i++) {
+      u_char c = s[i];
+      size_t needed;
+
+      if (isprint((int)c) && c != '"' && c != '\\') {
+         needed = 1;
+      } else {
+         needed = 4;  /* \\xNN */
+      }
+
+      if (out_len + needed + 1 > out_cap) {
+         out_cap = out_cap ? out_cap * 2 : 16;
+         if (out_cap < out_len + needed + 1)
+            out_cap = out_len + needed + 1;
+         SAFE_REALLOC(out, out_cap);
+      }
+
+      if (needed == 1) {
+         out[out_len++] = (char)c;
+      } else {
+         snprintf(hex, sizeof(hex), "\\x%02x", c);
+         memcpy(out + out_len, hex, 4);
+         out_len += 4;
+      }
+   }
+
+   out[out_len] = '\0';
+   return out;
+}
+
 
 /*
  * test a binary filter against a given file 
@@ -133,23 +184,31 @@ void print_fop(struct filter_op *fop, u_int32 eip)
 
 void print_test(struct filter_op *fop, u_int32 eip)
 {
+   char *escaped;
+
    switch(fop->op.test.op) {
       case FTEST_EQ:
          if (fop->op.test.size != 0)
             USER_MSG("%04lu: TEST level %d, offset %d, size %d, == %lu [%#x]\n", (unsigned long)eip,
                fop->op.test.level, fop->op.test.offset, fop->op.test.size, (unsigned long)fop->op.test.value, (unsigned int)fop->op.test.value);
-         else
+         else {
+            escaped = escape_binary(fop->op.test.string, fop->op.test.slen);
             USER_MSG("%04lu: TEST level %d, offset %d, \"%s\"\n", (unsigned long)eip,
-               fop->op.test.level, fop->op.test.offset, fop->op.test.string);
+               fop->op.test.level, fop->op.test.offset, escaped);
+            SAFE_FREE(escaped);
+         }
          break;
          
       case FTEST_NEQ:
          if (fop->op.test.size != 0)
             USER_MSG("%04lu: TEST level %d, offset %d, size %d, != %lu [%#x]\n", (unsigned long)eip,
                fop->op.test.level, fop->op.test.offset, fop->op.test.size, (unsigned long)fop->op.test.value, (unsigned int)fop->op.test.value);
-         else
+         else {
+            escaped = escape_binary(fop->op.test.string, fop->op.test.slen);
             USER_MSG("%04lu: TEST level %d, offset %d, not \"%s\"\n", (unsigned long)eip,
-               fop->op.test.level, fop->op.test.offset, fop->op.test.string);
+               fop->op.test.level, fop->op.test.offset, escaped);
+            SAFE_FREE(escaped);
+         }
          break;
 
       case FTEST_LT:
@@ -181,13 +240,17 @@ void print_test(struct filter_op *fop, u_int32 eip)
 
 void print_assign(struct filter_op *fop, u_int32 eip)
 {
+   char *escaped;
+
    if (fop->op.assign.size != 0)
       USER_MSG("%04lu: ASSIGNMENT level %d, offset %d, size %d, value %lu [%#x]\n", (unsigned long)eip,
             fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size, (unsigned long)fop->op.assign.value, (unsigned int)fop->op.assign.value);
-   else
-      USER_MSG("%04lu: ASSIGNMENT level %d, offset %d, string \"%s\"\n", (unsigned long)eip, 
-            fop->op.assign.level, fop->op.assign.offset, fop->op.assign.string);
-      
+   else {
+      escaped = escape_binary(fop->op.assign.string, fop->op.assign.slen);
+      USER_MSG("%04lu: ASSIGNMENT level %d, offset %d, string \"%s\"\n", (unsigned long)eip,
+            fop->op.assign.level, fop->op.assign.offset, escaped);
+      SAFE_FREE(escaped);
+   }
 }
 
 void print_inc(struct filter_op *fop, u_int32 eip)
@@ -204,66 +267,91 @@ void print_dec(struct filter_op *fop, u_int32 eip)
 
 void print_function(struct filter_op *fop, u_int32 eip)
 {
+   char *escaped;
+   char *replaced;
+
    switch (fop->op.func.op) {
       case FFUNC_SEARCH:
-         USER_MSG("%04lu: SEARCH level %d, string \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.level, fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: SEARCH level %d, string \"%s\"\n", (unsigned long)eip,
+               fop->op.func.level, escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       case FFUNC_REGEX:
-         USER_MSG("%04lu: REGEX level %d, string \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.level, fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: REGEX level %d, string \"%s\"\n", (unsigned long)eip,
+               fop->op.func.level, escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       case FFUNC_PCRE:
-         if (fop->op.func.replace)
-            USER_MSG("%04lu: PCRE_REGEX level %d, string \"%s\", replace \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.level, fop->op.func.string, fop->op.func.replace);
-         else
-            USER_MSG("%04lu: PCRE_REGEX level %d, string \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.level, fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         if (fop->op.func.replace) {
+            replaced = escape_binary(fop->op.func.replace, fop->op.func.rlen);
+            USER_MSG("%04lu: PCRE_REGEX level %d, string \"%s\", replace \"%s\"\n", (unsigned long)eip,
+                  fop->op.func.level, escaped, replaced);
+            SAFE_FREE(replaced);
+         } else
+            USER_MSG("%04lu: PCRE_REGEX level %d, string \"%s\"\n", (unsigned long)eip,
+                  fop->op.func.level, escaped);
+         SAFE_FREE(escaped);
          break;
 
       case FFUNC_REPLACE:
-         USER_MSG("%04lu: REPLACE \"%s\" --> \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.string, fop->op.func.replace);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         replaced = escape_binary(fop->op.func.replace, fop->op.func.rlen);
+         USER_MSG("%04lu: REPLACE \"%s\" --> \"%s\"\n", (unsigned long)eip,
+               escaped, replaced);
+         SAFE_FREE(escaped);
+         SAFE_FREE(replaced);
          break;
-         
+
       case FFUNC_INJECT:
-         USER_MSG("%04lu: INJECT \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: INJECT \"%s\"\n", (unsigned long)eip,
+               escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       case FFUNC_EXECINJECT:
-         USER_MSG("%04lu: EXECINJECT \"%s\"\n", (unsigned long)eip, 
-               fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: EXECINJECT \"%s\"\n", (unsigned long)eip,
+               escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       case FFUNC_RANDOM:
          USER_MSG("%04lu: RANDOM level %d start offset %d length %d\n", (unsigned long)eip,
                fop->op.func.level, fop->op.func.offset, fop->op.func.olen);
          break;
 
       case FFUNC_LOG:
-         USER_MSG("%04lu: LOG to \"%s\"\n", (unsigned long)eip, fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: LOG to \"%s\"\n", (unsigned long)eip, escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       case FFUNC_DROP:
          USER_MSG("%04lu: DROP\n", (unsigned long)eip);
          break;
-         
+
       case FFUNC_KILL:
          USER_MSG("%04lu: KILL\n", (unsigned long)eip);
          break;
-         
+
       case FFUNC_MSG:
-         USER_MSG("%04lu: MSG \"%s\"\n", (unsigned long)eip, fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: MSG \"%s\"\n", (unsigned long)eip, escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       case FFUNC_EXEC:
-         USER_MSG("%04lu: EXEC \"%s\"\n", (unsigned long)eip, fop->op.func.string);
+         escaped = escape_binary(fop->op.func.string, fop->op.func.slen);
+         USER_MSG("%04lu: EXEC \"%s\"\n", (unsigned long)eip, escaped);
+         SAFE_FREE(escaped);
          break;
-         
+
       default:
          USER_MSG("%04lu: UNDEFINED FUNCTION OPCODE (%d)!!\n", (unsigned long)eip, fop->op.func.op);
          break;

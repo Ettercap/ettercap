@@ -155,6 +155,29 @@ void print_host(struct host_profile *h)
 
 
 /*
+ * print a string to the XML output, escaping characters that are special
+ * to XML (prevents the output from being broken by user/foreign data).
+ */
+
+static void print_xml_escaped(FILE *f, const char *s)
+{
+   if (s == NULL)
+      return;
+
+   while (*s) {
+      switch (*s) {
+         case '<':  fputs("&lt;", f); break;
+         case '>':  fputs("&gt;", f); break;
+         case '&':  fputs("&amp;", f); break;
+         case '"':  fputs("&quot;", f); break;
+         case '\'': fputs("&apos;", f); break;
+         default:   fputc((unsigned char)*s, f); break;
+      }
+      s++;
+   }
+}
+
+/*
  * prints the infos of a single host in XML format
  */
 
@@ -171,13 +194,18 @@ void print_host_xml(struct host_profile *h)
    memset(os, 0, sizeof(os));
    
    fprintf(stdout, "\t<host ip=\"%s\">\n", ip_addr_ntoa(&h->L3_addr, tmp));
-   if (strcmp(h->hostname, ""))
-      fprintf(stdout, "\t\t<hostname>%s</hostname>\n", h->hostname);
+   if (strcmp(h->hostname, "")) {
+      fputs("\t\t<hostname>", stdout);
+      print_xml_escaped(stdout, h->hostname);
+      fputs("</hostname>\n", stdout);
+   }
    
 #ifdef HAVE_GEOIP
-   if (EC_GBL_CONF->geoip_support_enable)
-      fprintf(stdout, "\t\t<location>%s</location>\n", 
-            geoip_get_by_ip(&h->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN));
+   if (EC_GBL_CONF->geoip_support_enable) {
+      fputs("\t\t<location>", stdout);
+      print_xml_escaped(stdout, geoip_get_by_ip(&h->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN));
+      fputs("</location>\n", stdout);
+   }
 #endif
 
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
@@ -200,36 +228,60 @@ void print_host_xml(struct host_profile *h)
    
    if (strcmp((const char*)h->fingerprint, "")) {
       if (fingerprint_search((const char*)h->fingerprint, os) == E_SUCCESS) {
-         fprintf(stdout, "\t\t<fingerprint type=\"known\">%s</fingerprint>\n", h->fingerprint);
-         fprintf(stdout, "\t\t<os type=\"exact\">%s</os>\n", os);
+         fputs("\t\t<fingerprint type=\"known\">", stdout);
+         print_xml_escaped(stdout, (const char*)h->fingerprint);
+         fputs("</fingerprint>\n", stdout);
+         fputs("\t\t<os type=\"exact\">", stdout);
+         print_xml_escaped(stdout, os);
+         fputs("</os>\n", stdout);
       } else {
-         fprintf(stdout, "\t\t<fingerprint type=\"unknown\">%s</fingerprint>\n", h->fingerprint);
-         fprintf(stdout, "\t\t<os type=\"nearest\">%s</os>\n", os);
+         fputs("\t\t<fingerprint type=\"unknown\">", stdout);
+         print_xml_escaped(stdout, (const char*)h->fingerprint);
+         fputs("</fingerprint>\n", stdout);
+         fputs("\t\t<os type=\"nearest\">", stdout);
+         print_xml_escaped(stdout, os);
+         fputs("</os>\n", stdout);
       }
    }
    
    LIST_FOREACH(o, &(h->open_ports_head), next) {
       
-      fprintf(stdout, "\t\t<port proto=\"%s\" addr=\"%d\" service=\"%s\">\n", 
+      fprintf(stdout, "\t\t<port proto=\"%s\" addr=\"%d\" service=\"",
             (o->L4_proto == NL_TYPE_TCP) ? "tcp" : "udp", 
-            ntohs(o->L4_addr),
-            service_search(o->L4_addr, o->L4_proto));
+            ntohs(o->L4_addr));
+      print_xml_escaped(stdout, service_search(o->L4_addr, o->L4_proto));
+      fputs("\">\n", stdout);
       
-      if (o->banner)
-         fprintf(stdout, "\t\t\t<banner>%s</banner>\n", o->banner);
+      if (o->banner) {
+         fputs("\t\t\t<banner>", stdout);
+         print_xml_escaped(stdout, o->banner);
+         fputs("</banner>\n", stdout);
+      }
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
          
-         if (u->failed)  
-            fprintf(stdout, "\t\t\t<account user=\"%s\" failed=\"1\">\n", u->user);
-         else
-            fprintf(stdout, "\t\t\t<account user=\"%s\">\n", u->user);
+         if (u->failed)  {
+            fputs("\t\t\t<account user=\"", stdout);
+            print_xml_escaped(stdout, u->user);
+            fputs("\" failed=\"1\">\n", stdout);
+         } else {
+            fputs("\t\t\t<account user=\"", stdout);
+            print_xml_escaped(stdout, u->user);
+            fputs("\">\n", stdout);
+         }
             
-         fprintf(stdout, "\t\t\t\t<user>%s</user>\n", u->user);
-         fprintf(stdout, "\t\t\t\t<pass>%s</pass>\n", u->pass);
+         fputs("\t\t\t\t<user>", stdout);
+         print_xml_escaped(stdout, u->user);
+         fputs("</user>\n", stdout);
+         fputs("\t\t\t\t<pass>", stdout);
+         print_xml_escaped(stdout, u->pass);
+         fputs("</pass>\n", stdout);
          fprintf(stdout, "\t\t\t\t<client>%s</client>\n", ip_addr_ntoa(&u->client, tmp));
-         if (u->info)
-            fprintf(stdout, "\t\t\t\t<info>%s</info>\n", u->info);
+         if (u->info) {
+            fputs("\t\t\t\t<info>", stdout);
+            print_xml_escaped(stdout, u->info);
+            fputs("</info>\n", stdout);
+         }
          
          fprintf(stdout, "\t\t\t</account>\n");
       }

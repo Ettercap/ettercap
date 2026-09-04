@@ -446,6 +446,17 @@ static void scan_netmask(void)
 
 #ifdef WITH_IPV6
 /*
+ * helper to check if an IPv6 address is link-local
+ */
+static int ip6_addr_is_linklocal(struct ip_addr *ip)
+{
+   if (ntohs(ip->addr_type) != AF_INET6)
+      return 0;
+
+   return IN6_IS_ADDR_LINKLOCAL((struct in6_addr *)ip->addr);
+}
+
+/*
  * probe active IPv6 hosts
  */
 static void scan_ip6_onlink(void)
@@ -465,9 +476,14 @@ static void scan_ip6_onlink(void)
    /* go through the list of IPv6 addresses on the selected interface */
    LIST_FOREACH(e, &EC_GBL_IFACE->ip6_list, next) {
       /*
-       * ping to all-nodes from all ip addresses to get responses from all 
-       * IPv6 networks (global, link-local, ...)
+       * ff02::1 is a link-local multicast address.  Packets sent to it must
+       * use a link-local source address; otherwise the kernel/libnet may
+       * reject the write (especially when privacy/temporary addresses are
+       * enabled).  Skip non-link-local sources to avoid spurious failures.
        */
+      if (!ip6_addr_is_linklocal(&e->ip))
+         continue;
+
       send_L2_icmp6_echo(&e->ip, &an, LLA_IP6_ALLNODES_MULTICAST);
 
 #if EC_CHECK_LIBNET_VERSION(1,2)

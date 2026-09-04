@@ -116,6 +116,7 @@ void ec_usage(void)
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin> - multiple occurance allowed\n");
    fprintf(stdout, "      --plugin-list <plugin1>,[<plugin2>,...]       comma-separated list of plugins\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
+   fprintf(stdout, "      --no-filters            load -F filters, but keep them disabled\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
 #ifdef WITH_IPV6
    fprintf(stdout, "  -6, --ip6scan               send ICMPv6 probes to discover IPv6 nodes on the link\n");
@@ -159,6 +160,7 @@ void parse_options(int argc, char **argv)
       { "plugin-list", required_argument, NULL, 0 },
       
       { "filter", required_argument, NULL, 'F' },
+      { "no-filters", no_argument, NULL, 0 },
 #ifdef HAVE_EC_LUA
       { "lua-script", required_argument, NULL, 0 },
       { "lua-args", required_argument, NULL, 0 },
@@ -428,6 +430,9 @@ void parse_options(int argc, char **argv)
             }
             else if (!strcmp(long_options[option_index].name, "plugin-list")) {
                set_plugin_list(strdup(optarg));
+            }
+            else if (!strcmp(long_options[option_index].name, "no-filters")) {
+               EC_GBL_OPTIONS->no_filters = 1;
             }
             else {
                fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);

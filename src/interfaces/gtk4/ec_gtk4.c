@@ -74,6 +74,153 @@ static void write_pcapfile(void);
 #define ENABLED "true"
 #define DISABLED "false"
 
+/* \Device\NPF{...} names and their descriptions can be long (WinPcap) */
+#define IFACE_LEN 100
+
+/*
+ * A capture interface, as offered on the setup screen. The AdwComboRow
+ * displays `display` (the pcap description, or the device name when there is
+ * no description) and, when selected, `name` is what gets written into
+ * EC_GBL_OPTIONS->iface / ->iface_bridge.
+ */
+#define EC_TYPE_IFACE_ITEM (ec_iface_item_get_type())
+G_DECLARE_FINAL_TYPE(EcIfaceItem, ec_iface_item, EC, IFACE_ITEM, GObject)
+
+struct _EcIfaceItem {
+   GObject parent_instance;
+   char *name;
+   char *display;
+};
+
+G_DEFINE_FINAL_TYPE(EcIfaceItem, ec_iface_item, G_TYPE_OBJECT)
+
+enum { IPROP_0, IPROP_NAME, IPROP_DISPLAY, N_IPROPS };
+static GParamSpec *iface_props[N_IPROPS];
+
+static void ec_iface_item_finalize(GObject *object)
+{
+   EcIfaceItem *self = EC_IFACE_ITEM(object);
+
+   g_free(self->name);
+   g_free(self->display);
+
+   G_OBJECT_CLASS(ec_iface_item_parent_class)->finalize(object);
+}
+
+static void ec_iface_item_get_property(GObject *object, guint id, GValue *value,
+      GParamSpec *pspec)
+{
+   EcIfaceItem *self = EC_IFACE_ITEM(object);
+
+   if (id == IPROP_NAME)
+      g_value_set_string(value, self->name);
+   else if (id == IPROP_DISPLAY)
+      g_value_set_string(value, self->display);
+   else
+      G_OBJECT_WARN_INVALID_PROPERTY_ID(object, id, pspec);
+}
+
+static void ec_iface_item_class_init(EcIfaceItemClass *klass)
+{
+   GObjectClass *object_class = G_OBJECT_CLASS(klass);
+
+   object_class->finalize = ec_iface_item_finalize;
+   object_class->get_property = ec_iface_item_get_property;
+
+   iface_props[IPROP_NAME] = g_param_spec_string("name", NULL, NULL, NULL,
+         G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+   iface_props[IPROP_DISPLAY] = g_param_spec_string("display", NULL, NULL,
+         NULL, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+   g_object_class_install_properties(object_class, N_IPROPS, iface_props);
+}
+
+static void ec_iface_item_init(EcIfaceItem *self)
+{
+   (void) self;
+}
+
+/*
+ * Build the model of capture interfaces from the pcap device list ettercap
+ * enumerated at init (EC_GBL_PCAP->ifs).
+ */
+static GListStore *build_iface_model(void)
+{
+   GListStore *store = g_list_store_new(EC_TYPE_IFACE_ITEM);
+   pcap_if_t *dev;
+
+   for (dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      EcIfaceItem *item = g_object_new(EC_TYPE_IFACE_ITEM, NULL);
+
+      item->name = g_strdup(dev->name);
+      /* prefer the human-readable description; fall back to the name */
+      item->display = g_strdup((dev->description && *dev->description)
+            ? dev->description : dev->name);
+
+      g_list_store_append(store, item);
+      g_object_unref(item);
+   }
+
+   return store;
+}
+
+/* copy an interface name into a freshly-sized options field */
+static void set_iface_option(char **field, const char *name)
+{
+   SAFE_FREE(*field);
+   SAFE_CALLOC(*field, IFACE_LEN, sizeof(char));
+   strncpy(*field, name, IFACE_LEN - 1);
+}
+
+static void on_iface_selected(AdwComboRow *row, GParamSpec *pspec,
+      gpointer data)
+{
+   EcIfaceItem *item = adw_combo_row_get_selected_item(row);
+
+   (void) pspec;
+   (void) data;
+
+   if (item == NULL)
+      return;
+
+   DEBUG_MSG("on_iface_selected: set iface '%s'", item->name);
+   set_iface_option(&EC_GBL_OPTIONS->iface, item->name);
+}
+
+static void on_iface_bridge_selected(AdwComboRow *row, GParamSpec *pspec,
+      gpointer data)
+{
+   EcIfaceItem *item = adw_combo_row_get_selected_item(row);
+
+   (void) pspec;
+   (void) data;
+
+   if (item == NULL)
+      return;
+
+   DEBUG_MSG("on_iface_bridge_selected: set iface '%s'", item->name);
+   set_iface_option(&EC_GBL_OPTIONS->iface_bridge, item->name);
+}
+
+static void on_autostart_toggled(AdwSwitchRow *row, GParamSpec *pspec,
+      gpointer data)
+{
+   (void) pspec;
+   (void) data;
+
+   EC_GBL_CONF->sniffing_at_startup = adw_switch_row_get_active(row);
+}
+
+/* the bridged-sniffing switch enables the bridge-interface row */
+static void on_bridge_toggled(AdwSwitchRow *row, GParamSpec *pspec,
+      gpointer data)
+{
+   GtkWidget *bridge_row = data;
+
+   (void) pspec;
+
+   gtk_widget_set_sensitive(bridge_row, adw_switch_row_get_active(row));
+}
+
 /*
  * Wrapper functions which inject the real call into the main idle loop,
  * ensuring only the main thread performs GTK operations.
@@ -352,11 +499,17 @@ static void toggle_nopromisc(GSimpleAction *action, GVariant *value,
  *
  * g_application_quit() ends the first g_application_run() in gtkui_init();
  * the core then calls gtkui_start(), which builds the second application.
+ *
+ * `data` is the bridged-sniffing switch row: if it is on, switch the engine
+ * to bridged sniffing before proceeding, exactly as the GTK3 Accept button
+ * did.
  */
 static void gtkui_sniff(GtkButton *button, gpointer data)
 {
    (void) button;
-   (void) data;
+
+   if (data != NULL && adw_switch_row_get_active(ADW_SWITCH_ROW(data)))
+      set_bridge_sniff();
 
    g_application_quit(G_APPLICATION(etterapp));
 }
@@ -597,7 +750,10 @@ static void gtkui_pcap_filter(GSimpleAction *action, GVariant *value,
 static void gtkui_build_widgets(GApplication *app, gpointer data)
 {
    GtkWidget *toolbar, *header, *menubutton, *content, *scroll;
-   GtkWidget *button;
+   GtkWidget *button, *vbox, *clamp, *group;
+   GtkWidget *iface_row, *bridge_row, *autostart_row, *bridge_switch_row;
+   GListStore *iface_model;
+   GtkExpression *display_expr;
    GMenu *appmenu;
    gint width, height;
 
@@ -671,15 +827,44 @@ static void gtkui_build_widgets(GApplication *app, gpointer data)
 
    header = adw_header_bar_new();
 
+   /*
+    * The setup-screen menu, mirroring the GTK3 layout: a file section, a
+    * help/about section, an Options submenu (the promisc/unoffensive toggles
+    * and the netmask, which the GTK3 setup screen also exposed here), and
+    * quit. The two toggles are stateful boolean actions, so GMenu renders
+    * them as check items automatically.
+    */
    appmenu = g_menu_new();
-   g_menu_append(appmenu, "_Open PCAP", "app.open");
-   g_menu_append(appmenu, "_Save PCAP", "app.save");
+   {
+      GMenu *section, *options;
+
+      section = g_menu_new();
+      g_menu_append(section, "_Open PCAP", "app.open");
+      g_menu_append(section, "_Save PCAP", "app.save");
+      g_menu_append_section(appmenu, NULL, G_MENU_MODEL(section));
+      g_object_unref(section);
+
+      section = g_menu_new();
 #ifndef OS_WINDOWS
-   g_menu_append(appmenu, "_Help", "app.help");
+      g_menu_append(section, "_Help", "app.help");
 #endif
-   g_menu_append(appmenu, "_Keyboard Shortcuts", "app.shortcuts");
-   g_menu_append(appmenu, "_About", "app.about");
-   g_menu_append(appmenu, "_Quit", "app.quit");
+      g_menu_append(section, "_Keyboard Shortcuts", "app.shortcuts");
+      g_menu_append(section, "_About Ettercap", "app.about");
+      g_menu_append_section(appmenu, NULL, G_MENU_MODEL(section));
+      g_object_unref(section);
+
+      options = g_menu_new();
+      g_menu_append(options, "Unoffensive", "app.set_unoffensive");
+      g_menu_append(options, "Promisc mode", "app.set_promisc");
+      g_menu_append(options, "Set Netmask", "app.set_netmask");
+      g_menu_append_submenu(appmenu, "Options", G_MENU_MODEL(options));
+      g_object_unref(options);
+
+      section = g_menu_new();
+      g_menu_append(section, "_Quit", "app.quit");
+      g_menu_append_section(appmenu, NULL, G_MENU_MODEL(section));
+      g_object_unref(section);
+   }
 
    menubutton = gtk_menu_button_new();
    gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(menubutton), "open-menu-symbolic");
@@ -687,15 +872,88 @@ static void gtkui_build_widgets(GApplication *app, gpointer data)
          G_MENU_MODEL(appmenu));
    adw_header_bar_pack_end(ADW_HEADER_BAR(header), menubutton);
 
-   button = gtk_button_new_with_mnemonic("_Accept");
-   gtk_widget_add_css_class(button, "suggested-action");
-   g_signal_connect(button, "clicked", G_CALLBACK(gtkui_sniff), NULL);
-   adw_header_bar_pack_start(ADW_HEADER_BAR(header), button);
+   /*
+    * The setup form: which interface(s) to capture on, whether to start
+    * sniffing immediately, and whether to bridge two interfaces. This is the
+    * GTK3 setup screen's "Setup" frame, rebuilt with libadwaita rows:
+    * AdwComboRow for the interface dropdowns (an expression pulls the display
+    * string off each EcIfaceItem) and AdwSwitchRow for the toggles.
+    */
+   iface_model = build_iface_model();
+   display_expr = gtk_property_expression_new(EC_TYPE_IFACE_ITEM, NULL,
+         "display");
+
+   group = adw_preferences_group_new();
+   adw_preferences_group_set_title(ADW_PREFERENCES_GROUP(group), "Setup");
+
+   /* primary (unified) interface */
+   iface_row = adw_combo_row_new();
+   adw_preferences_row_set_title(ADW_PREFERENCES_ROW(iface_row),
+         "Network interface");
+   adw_combo_row_set_expression(ADW_COMBO_ROW(iface_row),
+         gtk_expression_ref(display_expr));
+   adw_combo_row_set_model(ADW_COMBO_ROW(iface_row),
+         G_LIST_MODEL(g_object_ref(iface_model)));
+   g_signal_connect(iface_row, "notify::selected-item",
+         G_CALLBACK(on_iface_selected), NULL);
+   adw_preferences_group_add(ADW_PREFERENCES_GROUP(group), iface_row);
+
+   /* sniff at startup */
+   autostart_row = adw_switch_row_new();
+   adw_preferences_row_set_title(ADW_PREFERENCES_ROW(autostart_row),
+         "Sniff at startup");
+   adw_switch_row_set_active(ADW_SWITCH_ROW(autostart_row),
+         EC_GBL_CONF->sniffing_at_startup);
+   g_signal_connect(autostart_row, "notify::active",
+         G_CALLBACK(on_autostart_toggled), NULL);
+   adw_preferences_group_add(ADW_PREFERENCES_GROUP(group), autostart_row);
+
+   /* bridge interface (built first so the switch below can reference it) */
+   bridge_row = adw_combo_row_new();
+   adw_preferences_row_set_title(ADW_PREFERENCES_ROW(bridge_row),
+         "Bridged interface");
+   adw_combo_row_set_expression(ADW_COMBO_ROW(bridge_row), display_expr);
+   adw_combo_row_set_model(ADW_COMBO_ROW(bridge_row),
+         G_LIST_MODEL(g_object_ref(iface_model)));
+   /* default the bridge to the second interface, if there is one */
+   if (g_list_model_get_n_items(G_LIST_MODEL(iface_model)) > 1)
+      adw_combo_row_set_selected(ADW_COMBO_ROW(bridge_row), 1);
+   g_signal_connect(bridge_row, "notify::selected-item",
+         G_CALLBACK(on_iface_bridge_selected), NULL);
+   gtk_widget_set_sensitive(bridge_row, FALSE);
+
+   /* bridged sniffing toggle -- enables the bridge interface row */
+   bridge_switch_row = adw_switch_row_new();
+   adw_preferences_row_set_title(ADW_PREFERENCES_ROW(bridge_switch_row),
+         "Bridged sniffing");
+   g_signal_connect(bridge_switch_row, "notify::active",
+         G_CALLBACK(on_bridge_toggled), bridge_row);
+   adw_preferences_group_add(ADW_PREFERENCES_GROUP(group), bridge_switch_row);
+   adw_preferences_group_add(ADW_PREFERENCES_GROUP(group), bridge_row);
 
    /*
-    * The message log. Everything USER_MSG() produces lands here, which
-    * makes it the first thing worth having on screen -- the setup screen's
-    * interface picker is built on top of it as the port proceeds.
+    * The combo rows start on item 0 but AdwComboRow does not emit
+    * notify::selected-item for that initial value, so seed the primary
+    * interface option explicitly -- otherwise EC_GBL_OPTIONS->iface would
+    * stay NULL until the user touched the dropdown.
+    */
+   {
+      EcIfaceItem *first =
+         adw_combo_row_get_selected_item(ADW_COMBO_ROW(iface_row));
+      if (first != NULL)
+         set_iface_option(&EC_GBL_OPTIONS->iface, first->name);
+   }
+
+   button = gtk_button_new_with_mnemonic("_Accept");
+   gtk_widget_add_css_class(button, "suggested-action");
+   g_signal_connect(button, "clicked", G_CALLBACK(gtkui_sniff),
+         bridge_switch_row);
+   adw_header_bar_pack_start(ADW_HEADER_BAR(header), button);
+
+   g_object_unref(iface_model);
+
+   /*
+    * The message log. Everything USER_MSG() produces lands here.
     */
    textview = gtk_text_view_new();
    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
@@ -717,8 +975,25 @@ static void gtkui_build_widgets(GApplication *app, gpointer data)
    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), textview);
    gtk_widget_set_vexpand(scroll, TRUE);
 
+   /*
+    * Lay the setup form above the message log. The form is wrapped in an
+    * AdwClamp so the rows stay a comfortable width instead of stretching
+    * across the whole window.
+    */
+   clamp = adw_clamp_new();
+   adw_clamp_set_maximum_size(ADW_CLAMP(clamp), 500);
+   adw_clamp_set_child(ADW_CLAMP(clamp), group);
+   gtk_widget_set_margin_top(clamp, 18);
+   gtk_widget_set_margin_bottom(clamp, 12);
+   gtk_widget_set_margin_start(clamp, 12);
+   gtk_widget_set_margin_end(clamp, 12);
+
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+   gtk_box_append(GTK_BOX(vbox), clamp);
+   gtk_box_append(GTK_BOX(vbox), scroll);
+
    toastoverlay = adw_toast_overlay_new();
-   adw_toast_overlay_set_child(ADW_TOAST_OVERLAY(toastoverlay), scroll);
+   adw_toast_overlay_set_child(ADW_TOAST_OVERLAY(toastoverlay), vbox);
 
    toolbar = adw_toolbar_view_new();
    adw_toolbar_view_add_top_bar(ADW_TOOLBAR_VIEW(toolbar), header);

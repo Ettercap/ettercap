@@ -341,9 +341,12 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
        
    ec_strtok(to_decode, "\r", &tok);
 
+   /* Some clients URL-encode the base64 token (e.g. %3D for '=') */
+   Decode_Url(to_decode);
+
    char *decoded;
    base64decode(to_decode, &decoded);
-  
+
    DEBUG_MSG("Clear text AUTH: %s", decoded); 
 
    /* clear text should be username:password 

@@ -171,6 +171,7 @@
 #
 [DATA][5] 
    data:1 = 0
+   len:4 = 65535
 
 #
 # some dissectors will decode/decrypt the data 
@@ -182,6 +183,7 @@
 #
 [DECODED][6]
    data:1 = 0
+   len:4 = 65535
 
 
 # EOF

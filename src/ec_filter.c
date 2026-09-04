@@ -31,6 +31,9 @@
 
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -E_FATAL; } while(0)
 
+/* sentinel offset for DATA.len / DECODED.len in etterfilter.tbl */
+#define DATA_LEN_OFFSET   0xFFFF
+
 /* since we need a recursive mutex, we cannot initialize it here statically */
 static pthread_mutex_t filters_mutex;
 #define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)
@@ -357,11 +360,19 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          if (cmp_func(htons(*(u_int16 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffff)) )
             return FLAG_TRUE;
          break;
-      case 4:
+      case 4: {
          /* int comparison */
-         if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
+         u_int32 val;
+         if (fop->op.test.level == 5 && fop->op.test.offset == DATA_LEN_OFFSET)
+            val = (u_int32)po->DATA.len;
+         else if (fop->op.test.level == 6 && fop->op.test.offset == DATA_LEN_OFFSET)
+            val = (u_int32)po->DATA.disp_len;
+         else
+            val = htonl(*(u_int32 *)(base + fop->op.test.offset));
+         if (cmp_func(val, (fop->op.test.value & 0xffffffff)) )
             return FLAG_TRUE;
          break;
+      }
       case 16: /* well IPv6 addresses should be handled as 16-byte pointer */
          if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.ipaddr, fop->op.test.size), 0) )
             return FLAG_TRUE;
@@ -387,8 +398,12 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
       JIT_FAULT("Cannot modify packets in unoffensive mode");
    
    DEBUG_MSG("filter engine: execute_assign: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
-   
-   /* 
+
+   /* DATA.len / DECODED.len are derived, not direct packet bytes */
+   if (fop->op.assign.offset == DATA_LEN_OFFSET)
+      JIT_FAULT("Cannot assign to %s.len", fop->op.assign.level == 6 ? "DECODED" : "DATA");
+
+   /*
     * point to the right base.
     */
    switch (fop->op.assign.level) {
@@ -450,8 +465,12 @@ static int execute_incdec(struct filter_op *fop, struct packet_object *po)
       JIT_FAULT("Cannot modify packets in unoffensive mode");
    
    DEBUG_MSG("filter engine: execute_incdec: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
-   
-   /* 
+
+   /* DATA.len / DECODED.len are derived, not direct packet bytes */
+   if (fop->op.assign.offset == DATA_LEN_OFFSET)
+      JIT_FAULT("Cannot increment/decrement %s.len", fop->op.assign.level == 6 ? "DECODED" : "DATA");
+
+   /*
     * point to the right base.
     */
    switch (fop->op.assign.level) {

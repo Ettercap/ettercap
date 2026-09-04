@@ -106,8 +106,9 @@ static int arp_poisoning_start(char *args)
    if (EC_GBL_PCAP->dlt != IL_TYPE_ETH && EC_GBL_PCAP->dlt != IL_TYPE_TR && EC_GBL_PCAP->dlt != IL_TYPE_FDDI)
       SEMIFATAL_ERROR("ARP poisoning does not support this media.\n");
    
-   /* we need the host list */
-   if (LIST_EMPTY(&EC_GBL_HOSTLIST))
+   /* we need the host list unless we're in silent mode (targets carry MACs) */
+   if (LIST_EMPTY(&EC_GBL_HOSTLIST) &&
+       !(EC_GBL_OPTIONS->silent && !EC_GBL_OPTIONS->load_hosts))
       SEMIFATAL_ERROR("ARP poisoning needs a non empty hosts list.\n");
    
    /* wipe the previous lists */

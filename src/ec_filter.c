@@ -55,6 +55,8 @@ static int func_inject(struct filter_op *fop, struct packet_object *po);
 static int func_execinject(struct filter_op *fop, struct packet_object *po);
 static int func_execreplace(struct filter_op *fop, struct packet_object *po);
 static int func_random(struct filter_op *fop, struct packet_object *po);
+static int func_mod(struct filter_op *fop, struct packet_object *po);
+static int func_chance(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
 static int func_kill(struct packet_object *po);
@@ -234,6 +236,16 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
       case FFUNC_RANDOM:
          /* replace the string through output of a executable */
          if (func_random(fop, po) == E_SUCCESS)
+            return FLAG_TRUE;
+         break;
+
+      case FFUNC_MOD:
+         if (func_mod(fop, po) == E_SUCCESS)
+            return FLAG_TRUE;
+         break;
+
+      case FFUNC_CHANCE:
+         if (func_chance(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
 
@@ -1126,6 +1138,87 @@ static int func_random(struct filter_op *fop, struct packet_object *po)
 
    return E_SUCCESS;
 
+}
+
+/*
+ * modulo of a packet field (C-like: true if remainder != 0)
+ */
+static int func_mod(struct filter_op *fop, struct packet_object *po)
+{
+   u_int32 value = 0;
+   size_t divisor = fop->op.func.olen;
+
+   if (divisor == 0)
+      JIT_FAULT("mod(): divisor cannot be zero");
+
+   {
+      u_char *base;
+
+      switch (fop->op.test.level) {
+         case 2:
+            base = po->L2.header;
+            break;
+         case 3:
+            base = po->L3.header;
+            break;
+         case 4:
+            base = po->L4.header;
+            break;
+         case 5:
+            base = po->DATA.data;
+            break;
+         case 6:
+            base = po->DATA.disp_data;
+            break;
+         default:
+            JIT_FAULT("mod(): unsupported level [%d]", fop->op.test.level);
+            return -E_FATAL;
+      }
+
+      switch (fop->op.test.size) {
+         case 1:
+            value = *(u_int8 *)(base + fop->op.test.offset);
+            break;
+         case 2:
+            value = htons(*(u_int16 *)(base + fop->op.test.offset));
+            break;
+         case 4:
+            value = htonl(*(u_int32 *)(base + fop->op.test.offset));
+            break;
+         default:
+            JIT_FAULT("mod(): unsupported size [%d]", fop->op.test.size);
+            return -E_FATAL;
+      }
+   }
+
+   if (value % divisor)
+      return E_SUCCESS;
+   else
+      return -E_NOTFOUND;
+}
+
+/*
+ * probabilistic condition: true with the given percent chance
+ */
+static int func_chance(struct filter_op *fop, struct packet_object *po)
+{
+   size_t percent = fop->op.func.olen;
+   struct timeval seed;
+
+   (void)po;
+
+   if (percent == 0)
+      return -E_NOTFOUND;
+   if (percent >= 100)
+      return E_SUCCESS;
+
+   gettimeofday(&seed, NULL);
+   srandom(seed.tv_sec ^ seed.tv_usec);
+
+   if ((random() % 100) < (long)percent)
+      return E_SUCCESS;
+   else
+      return -E_NOTFOUND;
 }
 
 /*

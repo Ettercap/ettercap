@@ -244,6 +244,17 @@ void print_function(struct filter_op *fop, u_int32 eip)
                fop->op.func.level, fop->op.func.offset, fop->op.func.olen);
          break;
 
+      case FFUNC_MOD:
+         USER_MSG("%04lu: MOD level %d offset %d size %d divisor %zu\n", (unsigned long)eip,
+               fop->op.test.level, fop->op.test.offset, fop->op.test.size,
+               (size_t)fop->op.func.olen);
+         break;
+
+      case FFUNC_CHANCE:
+         USER_MSG("%04lu: CHANCE percent %zu\n", (unsigned long)eip,
+               (size_t)fop->op.func.olen);
+         break;
+
       case FFUNC_LOG:
          USER_MSG("%04lu: LOG to \"%s\"\n", (unsigned long)eip, fop->op.func.string);
          break;

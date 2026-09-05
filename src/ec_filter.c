@@ -28,6 +28,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifndef OS_WINDOWS
+   #include <sys/wait.h>
+#endif
 
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -E_FATAL; } while(0)
 
@@ -990,6 +993,17 @@ static int func_execreplace(struct filter_op *fop, struct packet_object *po)
    /* close pipe stream */
    close(child_stdout[0]);
 
+   /*
+    * reap our own child here instead of relying on a global SIGCHLD
+    * handler. The child is already done producing output at this point.
+    * Reaping the specific PID avoids stealing (and mis-reaping) child
+    * processes spawned by linked libraries such as GTK/glycin, which do
+    * their own waitpid() and would otherwise fail with ECHILD.
+    */
+#ifndef OS_WINDOWS
+   waitpid(child_pid, NULL, 0);
+#endif
+
    /* check if we are overflowing pcap buffer */
    if(EC_GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)offset)
       JIT_FAULT("replaced output too long");
@@ -1215,49 +1229,68 @@ static int func_exec(struct filter_op *fop)
    
    DEBUG_MSG("filter engine: func_exec: %s", fop->op.func.string);
    
-   /* 
+   /*
     * the command must be executed by a child.
-    * we are forwding packets, and we cannot wait 
-    * for the execution of the command 
+    * we are forwding packets, and we cannot wait
+    * for the execution of the command
+    *
+    * use a double-fork so the process that actually runs the command is
+    * reparented to init (PID 1) and reaped by it. This lets us reap our
+    * own short-lived intermediate child by its specific PID below, rather
+    * than relying on a global SIGCHLD handler that calls waitpid(-1) and
+    * would otherwise steal child processes spawned by linked libraries
+    * such as GTK/glycin (causing them to fail with ECHILD).
     */
    pid = fork();
-   
+
    /* check if the fork was successful */
    if (pid == -1)
       SEMIFATAL_ERROR("filter engine: fork() failed, cannot execute %s", fop->op.func.string);
-   
-   /* differentiate between the parent and the child */
+
+   /* differentiate between the parent and the intermediate child */
    if (!pid) {
       int k, param_length;
       char **param = NULL;
       char *q = (char*)fop->op.func.string;
       char *p;
       int i = 0;
+      pid_t gchild;
+
+      /*
+       * fork once more: the grandchild runs the command and is reparented
+       * to init when this intermediate child exits right below, so nobody
+       * has to wait() for the long-running command.
+       */
+      gchild = fork();
+      if (gchild == -1)
+         _exit(-1);
+      if (gchild) /* intermediate child: leave, init adopts the grandchild */
+         _exit(0);
 
       /* split the string */
       for (p = strsep(&q, " "); p != NULL; p = strsep(&q, " ")) {
          /* allocate the array */
          SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-         
+
          /* copy the tokens in the array */
-         param[i++] = strdup(p); 
+         param[i++] = strdup(p);
       }
-      
+
       /* NULL terminate the array */
       SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-      
+
       param[i] = NULL;
       param_length= i + 1; //because there is a SAFE_REALLOC after the for.
-     
-      /* 
+
+      /*
        * close input, output and error.
-       * we don't want to clobber the interface 
+       * we don't want to clobber the interface
        * with output from the child
        */
       close(fileno(stdin));
       close(fileno(stdout));
       close(fileno(stderr));
-      
+
       /* execute the command */
       execve(param[0], param, NULL);
 
@@ -1267,7 +1300,12 @@ static int func_exec(struct filter_op *fop)
 	   SAFE_FREE(param);
       _exit(-1);
    }
-      
+
+   /* parent: reap the short-lived intermediate child by its specific PID */
+#ifndef OS_WINDOWS
+   waitpid(pid, NULL, 0);
+#endif
+
    return E_SUCCESS;
 }
 

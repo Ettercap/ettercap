@@ -749,12 +749,13 @@ static void gtkui_pcap_filter(GSimpleAction *action, GVariant *value,
  */
 static void gtkui_build_widgets(GApplication *app, gpointer data)
 {
-   GtkWidget *toolbar, *header, *menubutton, *content, *scroll;
+   GtkWidget *toolbar, *header, *menubutton, *content, *logo;
    GtkWidget *button, *vbox, *clamp, *group;
    GtkWidget *iface_row, *bridge_row, *autostart_row, *bridge_switch_row;
    GListStore *iface_model;
    GtkExpression *display_expr;
    GMenu *appmenu;
+   const char *path;
    gint width, height;
 
    (void) data;
@@ -953,32 +954,24 @@ static void gtkui_build_widgets(GApplication *app, gpointer data)
    g_object_unref(iface_model);
 
    /*
-    * The message log. Everything USER_MSG() produces lands here.
+    * The setup screen shows the form over the ettercap logo, matching the
+    * GTK3 setup screen. The message log is NOT created here -- it belongs to
+    * the sniffing screen (gtkui_create_menu); until then msgbuffer stays
+    * NULL and gtkui_msg() is a no-op, so setup-time messages are simply not
+    * shown (as in GTK3).
     */
-   textview = gtk_text_view_new();
-   gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
-   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textview), FALSE);
-   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
-   gtk_text_view_set_monospace(GTK_TEXT_VIEW(textview), TRUE);
-
-   msgbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-   {
-      GtkTextIter iter;
-
-      gtk_text_buffer_get_end_iter(msgbuffer, &iter);
-      endmark = gtk_text_buffer_create_mark(msgbuffer, "end", &iter, FALSE);
-   }
-
-   scroll = gtk_scrolled_window_new();
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll),
-         GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), textview);
-   gtk_widget_set_vexpand(scroll, TRUE);
+   path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE;
+   if (!g_file_test(path, G_FILE_TEST_EXISTS))
+      path = "./share/" LOGO_FILE;
+   logo = gtk_picture_new_for_filename(path);
+   gtk_picture_set_can_shrink(GTK_PICTURE(logo), TRUE);
+   gtk_widget_set_halign(logo, GTK_ALIGN_CENTER);
+   gtk_widget_set_valign(logo, GTK_ALIGN_CENTER);
+   gtk_widget_set_vexpand(logo, TRUE);
 
    /*
-    * Lay the setup form above the message log. The form is wrapped in an
-    * AdwClamp so the rows stay a comfortable width instead of stretching
-    * across the whole window.
+    * The form is wrapped in an AdwClamp so the rows stay a comfortable width
+    * instead of stretching across the whole window.
     */
    clamp = adw_clamp_new();
    adw_clamp_set_maximum_size(ADW_CLAMP(clamp), 500);
@@ -990,7 +983,7 @@ static void gtkui_build_widgets(GApplication *app, gpointer data)
 
    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_box_append(GTK_BOX(vbox), clamp);
-   gtk_box_append(GTK_BOX(vbox), scroll);
+   gtk_box_append(GTK_BOX(vbox), logo);
 
    toastoverlay = adw_toast_overlay_new();
    adw_toast_overlay_set_child(ADW_TOAST_OVERLAY(toastoverlay), vbox);
@@ -1158,26 +1151,21 @@ static void on_progress_closed(AdwDialog *dialog, gpointer data)
 
 static void gtkui_progress(char *title, int value, int max)
 {
-   GtkWidget *box;
-   GtkWidget *label;
-
    if (progress_dialog == NULL) {
-      box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-      gtk_widget_set_margin_top(box, 12);
-      gtk_widget_set_margin_bottom(box, 12);
-      gtk_widget_set_margin_start(box, 12);
-      gtk_widget_set_margin_end(box, 12);
-
-      label = gtk_label_new(title);
-      gtk_label_set_wrap(GTK_LABEL(label), TRUE);
-      gtk_box_append(GTK_BOX(box), label);
-
+      /*
+       * The title is the dialog heading, which AdwAlertDialog wraps on its
+       * own. Earlier this also duplicated the title into a GtkLabel inside
+       * the body -- shown twice, and the unwrapped copy triggered
+       * "Trying to measure GtkLabel ... but it needs at least N" warnings.
+       * The body now holds just the progress bar.
+       */
       progress_bar = gtk_progress_bar_new();
       gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(progress_bar), TRUE);
-      gtk_box_append(GTK_BOX(box), progress_bar);
+      gtk_widget_set_margin_top(progress_bar, 6);
 
       progress_dialog = ADW_DIALOG(adw_alert_dialog_new(title, NULL));
-      adw_alert_dialog_set_extra_child(ADW_ALERT_DIALOG(progress_dialog), box);
+      adw_alert_dialog_set_extra_child(ADW_ALERT_DIALOG(progress_dialog),
+            progress_bar);
       adw_alert_dialog_add_response(ADW_ALERT_DIALOG(progress_dialog),
             "cancel", "_Cancel");
       adw_alert_dialog_set_close_response(ADW_ALERT_DIALOG(progress_dialog),

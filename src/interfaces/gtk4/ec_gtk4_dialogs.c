@@ -47,8 +47,10 @@
 #include <ec.h>
 #include <ec_gtk4.h>
 
-/* the toast overlay lives in ec_gtk4.c and wraps the whole window content */
-extern GtkWidget *toastoverlay;
+/*
+ * toastoverlay is declared in ec_gtk4.h (it lives in ec_gtk4.c and wraps the
+ * whole window content); no local redeclaration needed.
+ */
 
 /*******************************************/
 

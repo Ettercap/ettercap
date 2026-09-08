@@ -56,15 +56,35 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
 {
    u_char mic[WPA_CCMP_TRAILER];
    u_char PN[6]; /* 48 bit Packet Number */
-   size_t data_len = len - sizeof(struct wpa_header);
    u_char AAD[AES_BLOCK_SIZE*2];
    u_char BZERO[AES_BLOCK_SIZE], A[AES_BLOCK_SIZE], B[AES_BLOCK_SIZE];
-   u_char decbuf[len];
    AES_KEY aes_ctx;
+   size_t data_len;
 
-   if (len > UINT16_MAX) {
-       return -E_NOTHANDLED;
-   }
+   /*
+    * GHSA-j37f-7jx3-rf8j: len is the payload that follows the WPA header, so
+    * it has to be at least large enough to hold the CCMP MIC trailer. It used
+    * to be used unchecked: data_len underflowed for len < 8, the memset near
+    * the end of this function wrote before data, and ccmp_decrypt() wrapped
+    * its own length and ran away up the stack.
+    *
+    * The upper bound is checked here too, before the decbuf VLA is sized from
+    * len rather than after it.
+    */
+   if (len > UINT16_MAX)
+      return -E_NOTHANDLED;
+
+   if (len < WPA_CCMP_TRAILER)
+      return -E_NOTHANDLED;
+
+   /*
+    * Numerically identical to the previous len - sizeof(struct wpa_header)
+    * (both are 8), but this is the value CCM actually wants in B0: the length
+    * of the plaintext payload, i.e. everything except the MIC trailer.
+    */
+   data_len = len - WPA_CCMP_TRAILER;
+
+   u_char decbuf[len];
 
    /* init the AES with the decryption key from SA */
    AES_set_encrypt_key(sa.decryption_key, 128, &aes_ctx);
@@ -190,6 +210,14 @@ static inline void get_AAD(u_char *AAD, u_char *mac, u_char *BZERO)
 static int ccmp_decrypt(u_char *enc, u_char *BZERO, u_char *B, u_char *A, u_char *mic, size_t len, AES_KEY *ctx)
 {
    int i = 1;
+
+   /*
+    * GHSA-j37f-7jx3-rf8j: len is unsigned, so a frame shorter than the
+    * trailer wrapped this subtraction to ~SIZE_MAX and the loop below then
+    * wrote AES blocks far past the caller's stack buffer.
+    */
+   if (len < WPA_CCMP_TRAILER)
+      return -E_NOTHANDLED;
 
    /* remove the trailer from the length */
    len -= WPA_CCMP_TRAILER;

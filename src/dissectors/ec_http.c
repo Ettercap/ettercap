@@ -26,6 +26,8 @@
 #include <ec_session.h>
 #include <ec_sslwrap.h>
 
+#include <stddef.h>   /* offsetof() */
+
 /* globals */
 #define USER 0
 #define PASS 1
@@ -105,6 +107,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 static int Parse_User_Agent(char *end, char *from_here, struct packet_object *po);
 static char *unicodeToString(char *p, size_t len);
 static void dumpRaw(char *str, unsigned char *buf, size_t len);
+static char *unicodeToStringChecked(char *base, size_t buflen, u_int32 offset, u_int16 len);
 int http_fields_init(void);
 
 #define CVAL(buf,pos) (((unsigned char *)(buf))[pos])
@@ -112,7 +115,19 @@ int http_fields_init(void);
 #define SVAL(buf,pos) (PVAL(buf,pos)|PVAL(buf,(pos)+1)<<8)
 #define IVAL(buf,pos) (SVAL(buf,pos)|SVAL(buf,(pos)+2)<<16)
 
-#define GetUnicodeString(structPtr, header) unicodeToString(((char*)structPtr) + IVAL(&structPtr->header.offset,0) , SVAL(&structPtr->header.len,0)/2)
+/*
+ * GHSA-jw9q-j2rm-94j2: the offset and length of every NTLM string are taken
+ * verbatim from the packet, so both have to be validated against the size of
+ * the decoded message before they are used as a displacement. buflen is the
+ * number of bytes base64decode() actually produced.
+ */
+#define NTLM_FIELD_IN_BOUNDS(buflen, off, cnt) \
+   ((size_t)(off) <= (size_t)(buflen) && (size_t)(cnt) <= (size_t)(buflen) - (size_t)(off))
+
+#define GetUnicodeString(structPtr, header, buflen) \
+   unicodeToStringChecked((char*)(structPtr), (buflen), \
+                          IVAL(&(structPtr)->header.offset,0), \
+                          SVAL(&(structPtr)->header.len,0))
 
 /************************************************/
 
@@ -465,7 +480,21 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    ec_strtok(to_decode, "\r", &tok);
 
    char *decoded;
-   base64decode(to_decode, &decoded);
+   int decoded_len;
+
+   decoded_len = base64decode(to_decode, &decoded);
+
+   /*
+    * GHSA-jw9q-j2rm-94j2: base64decode() sizes its output from the input
+    * string, so a short blob left every read below out of bounds - starting
+    * with msgType, which lives at offset 8.
+    */
+   if (decoded_len < (int)sizeof(tSmbStdHeader)) {
+      SAFE_FREE(to_decode);
+      SAFE_FREE(decoded);
+      return 1;
+   }
+
    hSmb = (tSmbStdHeader *) decoded;
    msgType = IVAL(&hSmb->msgType, 0);
 
@@ -476,7 +505,14 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
       tSmbNtlmAuthChallenge *challenge_struct;
 
       challenge_struct = (tSmbNtlmAuthChallenge *) decoded;
-      
+
+      /* the fixed part up to and including challengeData must be present */
+      if (decoded_len < (int)(offsetof(tSmbNtlmAuthChallenge, challengeData) + 8)) {
+         SAFE_FREE(to_decode);
+         SAFE_FREE(decoded);
+         return 1;
+      }
+
       /* Create a session to remember the server challenge */
       dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
       SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
@@ -502,17 +538,42 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
          if (conn_status->c_status == NTLM_WAIT_RESPONSE) {
             /* Fill the user and passwords */
             response_struct  = (tSmbNtlmAuthResponse *) decoded;
-            po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
-            SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
-            snprintf(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
-            outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
-            dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->lmResponse.offset,0), 24);	    	 
-            outstr[48] = ':';
-            outstr+=49;
-            dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->ntResponse.offset,0), 24);	       	    
-            outstr[48] = ':';
-            outstr += 49;
-            strcat(po->DISSECTOR.pass, (const char*)conn_status->c_data);
+
+            u_int32 lm_off = IVAL(&response_struct->lmResponse.offset, 0);
+            u_int32 nt_off = IVAL(&response_struct->ntResponse.offset, 0);
+            char *ntlm_user;
+
+            /*
+             * GHSA-jw9q-j2rm-94j2: the fixed header has to be there, and both
+             * response offsets have to address 24 bytes that are really inside
+             * the decoded message. Both used to be added to the message base
+             * unchecked, letting a peer read - and have us log - heap memory
+             * from anywhere in a 4GB window above the allocation.
+             */
+            if (decoded_len >= (int)offsetof(tSmbNtlmAuthResponse, buffer) &&
+                NTLM_FIELD_IN_BOUNDS(decoded_len, lm_off, 24) &&
+                NTLM_FIELD_IN_BOUNDS(decoded_len, nt_off, 24) &&
+                (ntlm_user = GetUnicodeString(response_struct, uUser, decoded_len)) != NULL) {
+
+               po->DISSECTOR.user = strdup(ntlm_user);
+               SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
+               snprintf(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
+               outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
+               dumpRaw(outstr, ((unsigned char*)response_struct) + lm_off, 24);
+               outstr[48] = ':';
+               outstr+=49;
+               dumpRaw(outstr, ((unsigned char*)response_struct) + nt_off, 24);
+               outstr[48] = ':';
+               outstr += 49;
+               strcat(po->DISSECTOR.pass, (const char*)conn_status->c_data);
+            } else {
+               DEBUG_MSG("HTTP --> malformed NTLM type 3 message, skipped");
+               session_free(s);
+               SAFE_FREE(ident);
+               SAFE_FREE(to_decode);
+               SAFE_FREE(decoded);
+               return 1;
+            }
 
             /* Are we authenticating to the proxy or to a website? */
             if (Proxy_Auth)
@@ -863,6 +924,18 @@ static void dumpRaw(char *str, unsigned char *buf, size_t len)
 
    for (i=0; i<len; ++i, str+=2)
       snprintf(str, 3, "%02x", buf[i]);
+}
+
+/*
+ * Bounds-checked wrapper around unicodeToString(). Returns NULL when the
+ * packet-supplied offset/length pair does not fit inside the decoded message.
+ */
+static char *unicodeToStringChecked(char *base, size_t buflen, u_int32 offset, u_int16 len)
+{
+   if (!NTLM_FIELD_IN_BOUNDS(buflen, offset, len))
+      return NULL;
+
+   return unicodeToString(base + offset, len / 2);
 }
 
 /* A little helper function */

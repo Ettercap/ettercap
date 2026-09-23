@@ -39,6 +39,7 @@
 
 /* globals */
 
+static int count = 0;
 static struct dec_entry *protocols_table;
 static unsigned protocols_num;
 static bool table_sorted = false;
@@ -86,9 +87,13 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 
    CANCELLATION_POINT();
 
-   /* start the timer for the stats */
-   stats_half_start(&EC_GBL_STATS->bh);
-  
+   count++;
+   if(count == 1)
+   {
+      /* start the timer for the stats */
+      stats_half_start(&EC_GBL_STATS->bh);
+   }
+
    /* XXX -- remove this */
 #if 0
    if (!EC_GBL_OPTIONS->quiet)
@@ -233,10 +238,13 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    /* free the structure */
    packet_destroy_object(&po);
-   
-   /* calculate the stats */
-   stats_half_end(&EC_GBL_STATS->bh, pkthdr->caplen);
-   
+   if(count == EC_GBL_CONF->packet_update_count)
+   {
+      /* calculate the stats */
+      stats_half_end(&EC_GBL_STATS->bh, pkthdr->caplen);
+      count = 0;
+   }
+
    CANCELLATION_POINT();
 
    return;

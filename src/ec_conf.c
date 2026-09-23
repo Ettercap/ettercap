@@ -69,6 +69,7 @@ static struct conf_entry connections[] = {
 
 static struct conf_entry stats[] = {
    { "sampling_rate", NULL },
+   { "packet_update_count", NULL },
    { NULL, NULL },
 };
 
@@ -184,12 +185,12 @@ static void init_structures(void)
    set_pointer(mitm, "ndp_poison_equal_mac", &EC_GBL_CONF->ndp_poison_equal_mac);
    set_pointer(mitm, "icmp6_probe_delay", &EC_GBL_CONF->icmp6_probe_delay);
 #endif
-
    set_pointer(connections, "connection_timeout", &EC_GBL_CONF->connection_timeout);
    set_pointer(connections, "connection_idle", &EC_GBL_CONF->connection_idle);
    set_pointer(connections, "connection_buffer", &EC_GBL_CONF->connection_buffer);
    set_pointer(connections, "connect_timeout", &EC_GBL_CONF->connect_timeout);
    set_pointer(stats, "sampling_rate", &EC_GBL_CONF->sampling_rate);
+   set_pointer(stats, "packet_update_count", &EC_GBL_CONF->packet_update_count);
    set_pointer(misc, "close_on_eof", &EC_GBL_CONF->close_on_eof);
    set_pointer(misc, "store_profiles", &EC_GBL_CONF->store_profiles);
    set_pointer(misc, "aggressive_dissectors", &EC_GBL_CONF->aggressive_dissectors);

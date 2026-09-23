@@ -25,6 +25,9 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_sslwrap.h>
+#include <ec_inject.h>
+
+#include <errno.h>
 
 /* globals */
 #define USER 0
@@ -106,6 +109,7 @@ static int Parse_User_Agent(char *end, char *from_here, struct packet_object *po
 static char *unicodeToString(char *p, size_t len);
 static void dumpRaw(char *str, unsigned char *buf, size_t len);
 int http_fields_init(void);
+static void http_adjust_content_length(struct packet_object *po);
 
 #define CVAL(buf,pos) (((unsigned char *)(buf))[pos])
 #define PVAL(buf,pos) ((unsigned)CVAL(buf,pos))
@@ -126,6 +130,9 @@ void __init http_init(void)
    sslw_dissect_add("https", 443, dissector_http, SSL_ENABLED);
    sslw_dissect_add("proxy", 8080, dissector_http, SSL_DISABLED);
    dissect_add("http", APP_LAYER_TCP, 80, dissector_http);
+
+   /* keep HTTP Content-Length in sync when a filter modifies the payload */
+   hook_add(HOOK_FILTER, &http_adjust_content_length);
 }
 
 
@@ -205,6 +212,154 @@ FUNC_DECODER(dissector_http)
    }
 
    return NULL;
+}
+
+/*
+ * case-insensitive bounded search for needle in haystack
+ */
+static u_char *http_memcasemem(u_char *haystack, size_t haystack_len, const char *needle, size_t needle_len)
+{
+   size_t i;
+
+   if (needle_len == 0 || needle_len > haystack_len)
+      return NULL;
+
+   for (i = 0; i <= haystack_len - needle_len; i++)
+      if (strncasecmp((char*)haystack + i, needle, needle_len) == 0)
+         return haystack + i;
+
+   return NULL;
+}
+
+/*
+ * If a filter modified an HTTP response that is fully contained in this
+ * packet, update the Content-Length header to match the new body size.
+ * This prevents HTTP clients from stalling when a replace() shortens or
+ * lengthens a single-packet response.
+ */
+static void http_adjust_content_length(struct packet_object *po)
+{
+   u_char *data;
+   u_char *headers_end;
+   u_char *cl_line;
+   u_char *cl_end;
+   u_char *colon;
+   u_char *value;
+   u_char *value_end;
+   size_t data_len;
+   size_t header_len;
+   size_t body_len;
+   size_t value_len;
+   size_t cl_value;
+   size_t orig_body_len;
+   size_t new_cl;
+   size_t new_value_len;
+   size_t payload_off;
+   size_t snaplen;
+   ssize_t line_delta;
+   char cl_buf[64];
+   char new_value[64];
+
+   /* this only applies to modified server HTTP responses */
+   if (po->L4.proto != NL_TYPE_TCP)
+      return;
+   if (po->DATA.len == 0 || po->DATA.data == NULL)
+      return;
+   if (!(po->flags & PO_MODIFIED))
+      return;
+   if (ntohs(po->L4.src) != 80 && ntohs(po->L4.src) != 8080 && ntohs(po->L4.src) != 443)
+      return;
+   if (strncasecmp((const char*)po->DATA.data, "HTTP/1.", 7))
+      return;
+
+   data = po->DATA.data;
+   data_len = po->DATA.len;
+
+   headers_end = (u_char*)memmem(data, data_len, "\r\n\r\n", 4);
+   if (headers_end == NULL)
+      return;
+
+   /* find the Content-Length header line */
+   cl_line = http_memcasemem(data, headers_end - data, "\r\nContent-Length:", 17);
+   if (cl_line == NULL)
+      return;
+   cl_line += 2; /* point to 'C' */
+
+   cl_end = (u_char*)memmem(cl_line, headers_end - cl_line, "\r\n", 2);
+   if (cl_end == NULL)
+      cl_end = headers_end;
+
+   colon = (u_char*)memchr(cl_line, ':', cl_end - cl_line);
+   if (colon == NULL)
+      return;
+
+   value = colon + 1;
+   while (value < cl_end && (*value == ' ' || *value == '\t'))
+      value++;
+   if (value >= cl_end)
+      return;
+
+   value_len = cl_end - value;
+   if (value_len >= sizeof(cl_buf))
+      return;
+
+   memcpy(cl_buf, value, value_len);
+   cl_buf[value_len] = '\0';
+
+   errno = 0;
+   cl_value = strtoul(cl_buf, NULL, 10);
+   if (errno == ERANGE)
+      return;
+
+   header_len = headers_end - data + 4;
+   body_len = data_len - header_len;
+
+   /*
+    * The filter's delta tells us how much the payload length changed.
+    * If the original body in this packet matches Content-Length, the
+    * whole response body is here and we can rewrite the header safely.
+    */
+   if ((ssize_t)body_len < po->DATA.delta)
+      return;
+   orig_body_len = (size_t)((ssize_t)body_len - po->DATA.delta);
+   if (orig_body_len != cl_value)
+      return;
+
+   new_cl = body_len;
+
+   snprintf(new_value, sizeof(new_value), "%zu", new_cl);
+   new_value_len = strlen(new_value);
+
+   value_end = cl_end; /* \r\n after the value */
+   line_delta = (ssize_t)new_value_len - (ssize_t)value_len;
+
+   /* do not grow beyond the capture buffer */
+   {
+      ssize_t new_data_len = (ssize_t)data_len + line_delta;
+
+      if (new_data_len < 0)
+         return;
+
+      payload_off = po->DATA.data - po->packet;
+      snaplen = (size_t)EC_GBL_PCAP->snaplen;
+      if (payload_off > snaplen - (size_t)new_data_len)
+         return;
+
+      if (line_delta != 0) {
+         /* move the rest of the headers and the body to make room */
+         memmove(value_end + line_delta, value_end,
+               (data + data_len) - value_end);
+
+         po->DATA.len = (size_t)new_data_len;
+         po->DATA.delta += (int)line_delta;
+      }
+   }
+
+   /* write the new value in place */
+   memcpy(value, new_value, new_value_len);
+
+   /* re-split the payload if it now exceeds the MTU */
+   inject_split_data(po);
 }
 
 /* Set the SSL flag (for ssl wrapper) when the CONNECT is finished */

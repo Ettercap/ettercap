@@ -60,6 +60,7 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
    char asc_dport[16];
    char asc_destination[MAX_ASCII_ADDR_LEN];
    int  ret_val = 0;
+   pid_t child_pid;
    char *param[4];
    char *commands[2] = {NULL, NULL};
    char *command = NULL;
@@ -248,7 +249,8 @@ clean_abort:
    param[3] = NULL;
 
    /* execute the script */
-   switch (fork()) {
+   child_pid = fork();
+   switch (child_pid) {
       case 0:
          regain_privs();
          execvp(param[0], param);
@@ -265,7 +267,12 @@ clean_abort:
          SAFE_FREE(command);
          return -E_INVALID;
       default:
-         wait(&ret_val);
+         /*
+          * wait for our specific child, not any child (waitpid vs wait):
+          * a bare wait() could reap a child spawned by a linked library
+          * such as GTK/glycin and make its own waitpid() fail with ECHILD.
+          */
+         waitpid(child_pid, &ret_val, 0);
          if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
             DEBUG_MSG("ec_redirect(): child exited with non-zero return "
                   "code: %d", WEXITSTATUS(ret_val));

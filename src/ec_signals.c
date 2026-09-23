@@ -46,7 +46,6 @@ void signal_handler(void);
 static handler_t *signal_handle(int signo, handler_t *handler, int flags);
 static void signal_SEGV(int sig);
 static void signal_TERM(int sig);
-static void signal_CHLD(int sig);
 static void signal_USR1(int sig);
 
 /*************************************/
@@ -57,7 +56,6 @@ void signal_handler(void)
 
 // fixing windows warnings
    (void) signal_SEGV;
-   (void) signal_CHLD;
 
 #ifdef SIGSEGV
    signal_handle(SIGSEGV, signal_SEGV, 0);
@@ -72,7 +70,18 @@ void signal_handler(void)
    signal_handle(SIGTERM, signal_TERM, 0);
 #endif
 #ifdef SIGCHLD
-   signal_handle(SIGCHLD, signal_CHLD, 0);
+   /*
+    * Keep SIGCHLD at its default disposition instead of installing a
+    * process-wide reaper. A handler that calls waitpid(-1, ...) reaps ANY
+    * child, including ones spawned by linked libraries (e.g. GTK/glycin
+    * forks a bwrap sandbox and waits on it). Stealing such a child makes
+    * the library's own waitpid() fail with ECHILD, which crashes the GTK
+    * GUI (see issue #1310). Every child ettercap forks is now reaped
+    * explicitly by its own PID at the fork site, so no global reaper is
+    * needed. SIG_DFL (not SIG_IGN) is important: SIG_IGN would auto-reap
+    * and break the libraries the same way.
+    */
+   signal_handle(SIGCHLD, SIG_DFL, 0);
 #endif
 #ifdef SIGPIPE
    /* needed by sslwrap */
@@ -235,21 +244,6 @@ static void signal_TERM(int sig)
    clean_exit(0);
 }
 
-
-/*
- * received when a child exits
- */
-static void signal_CHLD(int sig)
-{
-   /* variable not used */
-   (void) sig;
-#ifndef OS_WINDOWS
-   int stat;
-   
-   /* wait for the child to return and not become a zombie */
-   while (waitpid (-1, &stat, WNOHANG) > 0);
-#endif
-}
 
 static void signal_USR1(int sig)
 {

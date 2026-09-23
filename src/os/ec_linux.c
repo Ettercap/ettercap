@@ -263,15 +263,12 @@ u_int16 get_iface_mtu(const char *iface)
 void disable_interface_offload(void)
 {
 	int param_length= 0;
-	char *command;
+	char command_store[100], *command;
 	char **param = NULL;
 	char *p;
 	int ret_val, i = 0;
 
-	SAFE_CALLOC(command, 100, sizeof(char));
-
-	BUG_IF(command==NULL);
-
+	command = command_store;
 	memset(command, '\0', 100);	
 	snprintf(command, 99, "ethtool -K %s tso off gso off gro off lro off", EC_GBL_OPTIONS->iface);
 
@@ -294,13 +291,13 @@ void disable_interface_offload(void)
 #endif
 			execvp(param[0], param);
 			WARN_MSG("cannot disable offload on %s, do you have ethtool installed?", EC_GBL_OPTIONS->iface);
-			safe_free_mem(param, &param_length, command);
+			safe_free_mem(param, &param_length, NULL);
 			_exit(-E_INVALID);
 		case -1:
-			safe_free_mem(param, &param_length, command);
+			safe_free_mem(param, &param_length, NULL);
          break;
 		default:
-			safe_free_mem(param, &param_length, command);
+			safe_free_mem(param, &param_length, NULL);
 			wait(&ret_val);
 	} 	
 }

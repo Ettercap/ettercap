@@ -398,6 +398,7 @@ void load_conf(void)
          } while (p++ < *tmp + tmplen );
          
          DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", q, *tmp);
+         SAFE_FREE(*tmp);
       } else {
          /* set the integer value */ 
          *(int *)value = strtol(p, (char **)NULL, 10);

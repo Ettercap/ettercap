@@ -58,6 +58,7 @@ FUNC_DECODER(decode_udp)
    FUNC_DECODER_PTR(next_decoder);
    struct udp_header *udp;
    u_int16 sum;
+   u_int16 orig_csum = 0;
 
    udp = (struct udp_header *)DECODE_DATA;
 
@@ -129,6 +130,13 @@ FUNC_DECODER(decode_udp)
    
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+
+   /*
+    * remember the original checksum so we can detect filters
+    * that want to override the udp checksum manually.
+    */
+   orig_csum = udp->csum;
+
    EXECUTE_DECODER(next_decoder);
    
    /* 
@@ -139,11 +147,13 @@ FUNC_DECODER(decode_udp)
 
    /* Adjustments after filters */
    if ((PACKET->flags & PO_MODIFIED) && (PACKET->flags & PO_FORWARDABLE)) {
-            
+
       ORDER_ADD_SHORT(udp->ulen, PACKET->DATA.delta);
-      /* Recalculate checksum */
-      udp->csum = CSUM_INIT; 
-      udp->csum = L4_checksum(PACKET);
+      /* Recalculate checksum unless the filter set it manually */
+      if (udp->csum == orig_csum) {
+         udp->csum = CSUM_INIT;
+         udp->csum = L4_checksum(PACKET);
+      }
    }
 
    return NULL;

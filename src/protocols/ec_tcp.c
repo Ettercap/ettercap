@@ -111,6 +111,7 @@ FUNC_DECODER(decode_tcp)
    struct tcp_status *status = NULL;
    int direction = 0;
    u_int16 sum;
+   u_int16 orig_csum = 0;
 
    tcp = (struct tcp_header *)DECODE_DATA;
    
@@ -292,6 +293,13 @@ FUNC_DECODER(decode_tcp)
    
    /* get the next decoder */
    next_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
+
+   /*
+    * remember the original checksum so we can detect filters
+    * that want to override the tcp checksum manually.
+    */
+   orig_csum = tcp->csum;
+
    EXECUTE_DECODER(next_decoder);
 
    /* don't save the sessions in unoffensive mode */
@@ -330,9 +338,11 @@ FUNC_DECODER(decode_tcp)
          /* and now save the new delta */
          status->way[direction].seq_adj += PACKET->DATA.delta;
 
-         /* Recalculate checksum */
-         tcp->csum = CSUM_INIT; 
-         tcp->csum = L4_checksum(PACKET);
+         /* Recalculate checksum unless the filter set it manually */
+         if (tcp->csum == orig_csum) {
+            tcp->csum = CSUM_INIT;
+            tcp->csum = L4_checksum(PACKET);
+         }
       }
    }
    return NULL;

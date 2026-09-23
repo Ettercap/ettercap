@@ -164,7 +164,8 @@ void set_pcap_filter(char *filter)
 
 void set_filter(char *end, const char *filter)
 {
-	uint8_t f_enabled = 1;
+	/* default to enabled unless --no-filters was requested */
+	uint8_t f_enabled = !EC_GBL_OPTIONS->no_filters;
 	if ( (end-filter >=2) && *(end-2) == ':') {
 		*(end-2) = '\0';
 		f_enabled = !( *(end-1) == '0' );

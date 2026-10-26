@@ -184,8 +184,17 @@ void regain_privs(void)
 #ifdef OS_WINDOWS
    return;
 #endif
+#ifdef HAVE_SETRESUID
+   /* the saved set-user-ID is still 0, see drop_privs() */
+   if (setresuid(0, 0, 0) < 0)
+      ERROR_MSG("setresuid()");
+
+   if (setresgid(0, 0, 0) < 0)
+      ERROR_MSG("setresgid()");
+#else
    if(seteuid(0) < 0)
       ERROR_MSG("seteuid()");
+#endif
 
    USER_MSG("Regained root privileges: %d %d", getuid(), geteuid());
 }
@@ -227,6 +236,22 @@ void drop_privs(void)
 
    reset_logfile_owners(geteuid(), getegid(), uid, gid);
 
+#ifdef HAVE_SETRESUID
+   /*
+    * set both the real and the effective IDs, keeping only the saved
+    * set-user-ID as root so regain_privs() still works.
+    * a process with real UID 0 and a non-root effective UID looks like a
+    * setuid binary to its children, and e.g. bubblewrap (used by the
+    * glycin image loaders behind GTK) refuses to run in that state.
+    */
+   DEBUG_MSG("drop_privs: setresuid(%d) setresgid(%d)", uid, gid);
+
+   if ( setresgid(gid, gid, 0) < 0 )
+      ERROR_MSG("setresgid()");
+
+   if ( setresuid(uid, uid, 0) < 0 )
+      ERROR_MSG("setresuid()");
+#else
    DEBUG_MSG("drop_privs: seteuid(%d) setegid(%d)", uid, gid);
 
    /* drop to a good uid/gid ;) */
@@ -235,6 +260,7 @@ void drop_privs(void)
 
    if ( seteuid(uid) < 0 )
       ERROR_MSG("seteuid()");
+#endif
 
    DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
    USER_MSG("Privileges dropped to EUID %d EGID %d...\n\n", (int)geteuid(), (int)getegid() );

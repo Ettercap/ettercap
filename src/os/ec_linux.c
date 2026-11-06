@@ -267,6 +267,7 @@ void disable_interface_offload(void)
 	char **param = NULL;
 	char *p;
 	int ret_val, i = 0;
+	pid_t child_pid;
 
 	SAFE_CALLOC(command, 100, sizeof(char));
 
@@ -286,7 +287,8 @@ void disable_interface_offload(void)
 	param[i] = NULL;
 	param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
-	switch(fork()) {
+	child_pid = fork();
+	switch(child_pid) {
 		case 0:
 #ifndef DEBUG
 			/* don't print on console if the ethtool cannot disable some offloads unless you are in debug mode */
@@ -301,8 +303,13 @@ void disable_interface_offload(void)
          break;
 		default:
 			safe_free_mem(param, &param_length, command);
-			wait(&ret_val);
-	} 	
+			/*
+			 * wait for our specific child, not any child (waitpid vs wait):
+			 * a bare wait() could reap a child spawned by a linked library
+			 * such as GTK/glycin and make its own waitpid() fail with ECHILD.
+			 */
+			waitpid(child_pid, &ret_val, 0);
+	}
 }
 
 #ifdef WITH_IPV6

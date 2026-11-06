@@ -217,6 +217,8 @@ void set_quiet(void)
 void set_script(char *script)
 {
 	EC_GBL_OPTIONS->script = strdup(script);
+   /* Keep original pointer for later free() operation */
+   EC_GBL_OPTIONS->script_orig = EC_GBL_OPTIONS->script;
 }
 
 void set_silent(void)

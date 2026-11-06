@@ -32,6 +32,16 @@ static void scanbutton_clicked(GtkButton *button, gpointer data);
 static void hostlistbutton_clicked(GtkButton *button, gpointer data);
 static void mitmstopbutton_clicked(GtkButton *button, gpointer data);
 
+/* show the background logo only while the tab view has no pages */
+static void on_notebook_pages(AdwTabView *view, GParamSpec *pspec,
+      gpointer logo)
+{
+   (void) pspec;
+
+   gtk_widget_set_visible(GTK_WIDGET(logo),
+         adw_tab_view_get_n_pages(view) == 0);
+}
+
 /*
  * Menus are built with GMenu, exactly as the GTK3 interface did -- that part
  * needed no porting. What changed:
@@ -51,7 +61,7 @@ static void mitmstopbutton_clicked(GtkButton *button, gpointer data);
 void gtkui_create_menu(GApplication *app, gpointer data)
 {
    GtkWidget *header, *menubutton, *button, *logo, *box, *vpaned, *scroll;
-   GtkWidget *toolbar, *tabbox;
+   GtkWidget *toolbar, *tabbox, *overlay;
    GtkTextIter iter;
    GtkBuilder *builder;
    GMenu *menu;
@@ -546,9 +556,11 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    adw_tab_bar_set_autohide(ADW_TAB_BAR(tabbar), TRUE);
 
    /*
-    * The logo shows through as the tab view's background until the first
-    * page is opened, which is what the GTK3 interface used the empty
-    * notebook frame for.
+    * The logo is shown centered over the tab view while it is empty, and
+    * hidden once the first page opens -- so opening a list actually replaces
+    * it, rather than the logo sitting permanently above the pages. It is an
+    * overlay on the tab view (not a sibling box child) and its visibility is
+    * driven by the tab view's page count.
     */
    path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE;
    if (!g_file_test(path, G_FILE_TEST_EXISTS))
@@ -558,12 +570,20 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    gtk_widget_set_valign(logo, GTK_ALIGN_CENTER);
    gtk_picture_set_can_shrink(GTK_PICTURE(logo), TRUE);
 
+   overlay = gtk_overlay_new();
+   gtk_widget_set_vexpand(notebook, TRUE);
+   gtk_overlay_set_child(GTK_OVERLAY(overlay), notebook);
+   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), logo);
+
+   /* start with the logo shown (no pages yet) and track page count */
+   gtk_widget_set_visible(logo, adw_tab_view_get_n_pages(ADW_TAB_VIEW(notebook)) == 0);
+   g_signal_connect(notebook, "notify::n-pages",
+         G_CALLBACK(on_notebook_pages), logo);
+
    tabbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_box_append(GTK_BOX(tabbox), tabbar);
-   gtk_box_append(GTK_BOX(tabbox), logo);
-   gtk_widget_set_vexpand(logo, TRUE);
-   gtk_box_append(GTK_BOX(tabbox), notebook);
-   gtk_widget_set_vexpand(notebook, TRUE);
+   gtk_box_append(GTK_BOX(tabbox), overlay);
+   gtk_widget_set_vexpand(overlay, TRUE);
 
    /* messages */
    textview = gtk_text_view_new();

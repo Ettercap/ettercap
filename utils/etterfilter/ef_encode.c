@@ -348,8 +348,29 @@ int encode_function(char *string, struct filter_op *fop)
          ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
+   } else if (!strcmp(name, "mod")) {
+      if (nargs == 2) {
+         if (encode_offset(dec_args[0], fop) == E_SUCCESS) {
+            fop->opcode = FOP_FUNC;
+            fop->op.func.op = FFUNC_MOD;
+            fop->op.func.olen = atoi(dec_args[1]);
+            ret = E_SUCCESS;
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "random")) {
-      if (nargs == 3) {
+      if (nargs == 0) {
+         fop->opcode = FOP_FUNC;
+         fop->op.func.op = FFUNC_CHANCE;
+         fop->op.func.olen = 50;
+         ret = E_SUCCESS;
+      } else if (nargs == 1) {
+         fop->opcode = FOP_FUNC;
+         fop->op.func.op = FFUNC_CHANCE;
+         fop->op.func.olen = atoi(dec_args[0]);
+         ret = E_SUCCESS;
+      } else if (nargs == 3) {
          if (encode_offset(dec_args[0], fop) == E_SUCCESS) {
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_RANDOM;

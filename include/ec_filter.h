@@ -58,6 +58,8 @@ struct filter_op {
             #define FFUNC_EXECINJECT 10
             #define FFUNC_EXECREPLACE 11
             #define FFUNC_RANDOM    12
+            #define FFUNC_MOD       13
+            #define FFUNC_CHANCE    14
          u_int8 level; 
          u_int8 *string;
          size_t slen;

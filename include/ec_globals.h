@@ -90,6 +90,7 @@ struct ec_options {
    char gateway:1;
    char lifaces:1;
    char broadcast:1;
+   char no_filters:1;
    char reversed;
    char *hostsfile;
    LIST_HEAD(plugin_list_t, plugin_list) plugins;

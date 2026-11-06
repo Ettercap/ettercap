@@ -573,7 +573,16 @@ static int sslw_clienthello_cb(SSL *ssl, int *alert, void *arg)
 
    ae = (struct accepted_entry *)arg;
 
-   /* extract hostname value from SNI extension */
+   /*
+    * Extract hostname value from SNI extension.
+    *
+    * This callback is invoked more than once per handshake (it returns
+    * SSL_CLIENT_HELLO_RETRY the first time), so release whatever the previous
+    * invocation stored before taking ownership of a new string. SAFE_FREE()
+    * NULLs as it frees, which keeps this safe to re-enter and makes a double
+    * free of ae->hostname unreachable on every path that reaches here.
+    */
+   SAFE_FREE(ae->hostname);
    ae->hostname = sslw_get_clienthello_sni(ssl);
 
    if (ae->tls_handshake_state != SSL_CLIENTHELLO_INTERCEPTED) {
@@ -600,8 +609,14 @@ static char* sslw_get_clienthello_sni(SSL *ssl)
          sni_type = sni[2];
          val_len = sni[3] << 8 | sni[4];
 
-         if (sni_type == TLSEXT_NAMETYPE_host_name)
-            return strndup(sni+5, val_len);
+         /*
+          * GHSA-v48w-7cvh-c7f4: val_len comes straight off the wire and the
+          * client_hello callback runs before OpenSSL validates extension
+          * bodies, so it has to be checked against the extension we actually
+          * got. Without this, strndup() walked up to 64KB past the buffer.
+          */
+         if (sni_type == TLSEXT_NAMETYPE_host_name && val_len <= len - 5)
+            return strndup((const char *)sni + 5, val_len);
       }
    }
 
@@ -1309,9 +1324,22 @@ static int sslw_remove_sts(struct packet_object *po)
    len = end - ptr;
 
    ptr = (u_char*)memmem(ptr, len, "\r\nStrict-Transport-Security:", slen);
+   if (ptr == NULL)
+      return -E_NOTFOUND;
    ptr += 2;
 
-   h_end = (u_char*)memmem(ptr, len, "\r\n", 2);
+   /*
+    * GHSA-hq2w-pg4m-6w63: len still described the whole buffer, so this search
+    * ran up to (ptr - po->DATA.data) bytes past the end of it and could match
+    * out of bounds. Bound it by what is actually left after the advanced
+    * pointer, and bail out when the header is not terminated inside this
+    * packet - h_end used to become 0x2 there, underflowing header_length and
+    * handing memcpy() a near-SIZE_MAX length. len itself must keep describing
+    * the whole packet, since the reconstruction below is sized from it.
+    */
+   h_end = (u_char*)memmem(ptr, (size_t)(end - ptr), "\r\n", 2);
+   if (h_end == NULL)
+      return -E_NOTFOUND;
    h_end += 2;
 
    size_t before_header = ptr - po->DATA.data;

@@ -567,8 +567,18 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
    return -E_NOTFOUND;
 #else
 #ifdef HAVE_PCRE2
-   PCRE2_SIZE *ovec;
+   /*
+    * GHSA-f3j5-rhhr-85j5: hold our own copy of the ovector.
+    * The ovector lives inside the pcre2_match_data block, so a pointer to it
+    * is only valid while that block is alive. Copying the offsets out lets us
+    * release the match data on every path without the rest of the function
+    * reading (and computing memcpy offsets from) freed heap memory.
+    */
+   PCRE2_SIZE ovec[PCRE_OVEC_SIZE];
+   PCRE2_SIZE *ovec_src;
    pcre2_match_data *match_data;
+   uint32_t ovec_pairs, n;
+   memset(&ovec, 0, sizeof(ovec));
 #else
    int ovec[PCRE_OVEC_SIZE];
    memset(&ovec, 0, sizeof(ovec));
@@ -583,14 +593,28 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          /* search in the real packet */
 #ifdef HAVE_PCRE2
          match_data = pcre2_match_data_create_from_pattern(fop->op.func.ropt->pregex, NULL);
-         if ( (ret = pcre2_match(fop->op.func.ropt->pregex, (PCRE2_SPTR)po->DATA.data, po->DATA.len, 0, 0, match_data, NULL)) < 0)
+         if ( (ret = pcre2_match(fop->op.func.ropt->pregex, (PCRE2_SPTR)po->DATA.data, po->DATA.len, 0, 0, match_data, NULL)) < 0) {
+            /* also plugs the leak this path used to have */
+            pcre2_match_data_free(match_data);
+            return -E_NOTFOUND;
+         }
+
+         /* snapshot the offsets before the match data goes away */
+         ovec_src = pcre2_get_ovector_pointer(match_data);
+         ovec_pairs = pcre2_get_ovector_count(match_data);
+         if (ovec_pairs > PCRE_OVEC_SIZE / 2)
+            ovec_pairs = PCRE_OVEC_SIZE / 2;
+         for (n = 0; n < ovec_pairs * 2; n++)
+            ovec[n] = ovec_src[n];
+
+         pcre2_match_data_free(match_data);
+
+         /* never let a marker index past the pairs we actually copied */
+         if (ret > (int)ovec_pairs)
+            ret = (int)ovec_pairs;
 #else
          if ( (ret = pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.data, po->DATA.len, 0, 0, ovec, sizeof(ovec) / sizeof(*ovec))) < 0)
-#endif
             return -E_NOTFOUND;
-
-#ifdef HAVE_PCRE2
-         pcre2_match_data_free(match_data);
 #endif
 
          /* the pcre wants to modify the packet */
@@ -621,9 +645,6 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
             }
             /* now: i = strlen(q) */
 
-#ifdef HAVE_PCRE2
-            ovec = pcre2_get_ovector_pointer(match_data);
-#endif
             SAFE_CALLOC(replaced, markers*(ovec[1]-ovec[0]) + i + 1, sizeof(char));
           
             po->flags |= PO_MODIFIED;
@@ -707,11 +728,14 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          /* search in the decoded one */
 #ifdef HAVE_PCRE2
          match_data = pcre2_match_data_create_from_pattern(fop->op.func.ropt->pregex, NULL);
-         if ( pcre2_match(fop->op.func.ropt->pregex, (PCRE2_SPTR)po->DATA.disp_data, po->DATA.disp_len, 0, 0, match_data, NULL) < 0)
+         if ( pcre2_match(fop->op.func.ropt->pregex, (PCRE2_SPTR)po->DATA.disp_data, po->DATA.disp_len, 0, 0, match_data, NULL) < 0) {
+            pcre2_match_data_free(match_data);
+            return -E_NOTFOUND;
+         }
 #else
          if ( pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.disp_data, po->DATA.disp_len, 0, 0, NULL, 0) < 0)
-#endif
             return -E_NOTFOUND;
+#endif
 
 #ifdef HAVE_PCRE2
          pcre2_match_data_free(match_data);

@@ -166,6 +166,9 @@ uncomment #define below if you want to see all contacts status changes - be care
 #define GG_STATUS60_CMD    0x0000000f
 #define GG_STATUS70_CMD    0x00000017
 #define GG_MAX_LEN         70
+/* GHSA-vrjv-f8gv-2h35: sized for the longest string each helper can build */
+#define GG_TBUF_SIZE       64
+#define GG_TBUF3_SIZE      64
 
 struct gg_hdr {
    u_int32 type;
@@ -290,8 +293,8 @@ struct gg_status70_hdr {
 
 FUNC_DECODER(dissector_gg);
 void gg_init(void);
-void gg_get_status(u_int32 status, char *str);
-void gg_get_version(u_int32 version, char *str);
+void gg_get_status(u_int32 status, char *str, size_t size);
+void gg_get_version(u_int32 version, char *str, size_t size);
 
 /************************************************/
 
@@ -320,7 +323,12 @@ FUNC_DECODER(dissector_gg)
    struct gg_recv_msg_hdr *gg_recv_msg;
    struct gg_new_status_hdr *gg_new_status;
    char *tbuf, *tbuf2, *tbuf3;
-   char user[10], pass[40];
+   /* GHSA-vrjv-f8gv-2h35: a u_int32 uin needs 11 bytes and 5 x %X needs 41 */
+   char user[12], pass[48];
+
+/* GHSA-vrjv-f8gv-2h35: the short-packet guards below used to return without
+ * releasing the three scratch buffers */
+#define GG_BAIL() do { SAFE_FREE(tbuf); SAFE_FREE(tbuf2); SAFE_FREE(tbuf3); return NULL; } while(0)
 
    /* don't complain about unused var */
    (void)end;
@@ -352,16 +360,16 @@ FUNC_DECODER(dissector_gg)
 
    DEBUG_MSG("Gadu-Gadu --> TCP dissector_gg (%.8X:%.8X)", gg->type, gg->len);
 
-   SAFE_CALLOC(tbuf, 50, sizeof(char));
-   SAFE_CALLOC(tbuf2, 71, sizeof(char));
-   SAFE_CALLOC(tbuf3, 30, sizeof(char));
+   SAFE_CALLOC(tbuf, GG_TBUF_SIZE, sizeof(char));
+   SAFE_CALLOC(tbuf2, GG_MAX_LEN + 1, sizeof(char));
+   SAFE_CALLOC(tbuf3, GG_TBUF3_SIZE, sizeof(char));
    
 if ((gg->type == GG_LOGIN50_CMD) && !FROM_SERVER("gg", PACKET)) {
-   gg_get_status(gg_login50->status,tbuf);
-   gg_get_version(gg_login50->version,tbuf3);
+   gg_get_status(gg_login50->status, tbuf, GG_TBUF_SIZE);
+   gg_get_version(gg_login50->version, tbuf3, GG_TBUF3_SIZE);
    size_t offset=22;
    if (gg->len < offset)
-       return NULL;
+       GG_BAIL();
    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
    strncpy(tbuf2,gg_login50->description, copy_len);
    tbuf2[copy_len]='\0';
@@ -381,11 +389,11 @@ if ((gg->type == GG_LOGIN50_CMD) && !FROM_SERVER("gg", PACKET)) {
                                  gg_login50->local_port);
 }
 else if (gg->type == GG_LOGIN60_CMD) {
-   gg_get_status(gg_login60->status,tbuf);
-   gg_get_version(gg_login60->version,tbuf3);
+   gg_get_status(gg_login60->status, tbuf, GG_TBUF_SIZE);
+   gg_get_version(gg_login60->version, tbuf3, GG_TBUF3_SIZE);
    size_t offset=31;
    if (gg->len < offset)
-       return NULL;
+       GG_BAIL();
    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
    strncpy(tbuf2,gg_login60->description, copy_len);
    tbuf2[copy_len]='\0';
@@ -407,11 +415,11 @@ else if (gg->type == GG_LOGIN60_CMD) {
                                  gg_login60->remote_port);
 }
 else if (gg->type == GG_LOGIN70_CMD) {
-   gg_get_status(gg_login70->status,tbuf);
-   gg_get_version(gg_login70->version,tbuf3);
+   gg_get_status(gg_login70->status, tbuf, GG_TBUF_SIZE);
+   gg_get_version(gg_login70->version, tbuf3, GG_TBUF3_SIZE);
    size_t offset=92;
    if (gg->len < offset)
-       return NULL;
+       GG_BAIL();
    size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
    strncpy(tbuf2,gg_login70->description, copy_len);
    tbuf2[copy_len]='\0';
@@ -459,10 +467,10 @@ else if (gg->type == GG_WELCOME_CMD) {
 }
 #ifdef GG_CONTACTS_STATUS_CHANGES
 else if ((gg->type == GG_STATUS_CMD) && FROM_SERVER("gg", PACKET)) {
-    gg_get_status(gg_status->status,tbuf);
+    gg_get_status(gg_status->status, tbuf, GG_TBUF_SIZE);
     size_t offset=8;
     if (gg->len < offset)
-        return NULL;
+        GG_BAIL();
     size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
     strncpy(tbuf2,gg_status->description, copy_len);
     tbuf2[copy_len]='\0';
@@ -475,10 +483,10 @@ else if ((gg->type == GG_STATUS_CMD) && FROM_SERVER("gg", PACKET)) {
 } 
 #endif
 else if ((gg->type == GG_NEW_STATUS_CMD) && !FROM_SERVER("gg", PACKET)) {
-      gg_get_status(gg_new_status->status,tbuf);
+      gg_get_status(gg_new_status->status, tbuf, GG_TBUF_SIZE);
       size_t offset=4;
       if (gg->len < offset)
-          return NULL;
+          GG_BAIL();
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       strncpy(tbuf2,gg_new_status->description, copy_len);
       tbuf2[copy_len]='\0';
@@ -490,11 +498,11 @@ else if ((gg->type == GG_NEW_STATUS_CMD) && !FROM_SERVER("gg", PACKET)) {
 }
 #ifdef GG_CONTACTS_STATUS_CHANGES
 else if ((gg->type == GG_STATUS50_CMD) && FROM_SERVER("gg", PACKET)) {
-      gg_get_status(gg_status50->status,tbuf);
-      gg_get_version(gg_status50->version,tbuf3);
+      gg_get_status(gg_status50->status, tbuf, GG_TBUF_SIZE);
+      gg_get_version(gg_status50->version, tbuf3, GG_TBUF3_SIZE);
       size_t offset=20;
       if (gg->len < offset)
-          return NULL;
+          GG_BAIL();
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       strncpy(tbuf2,gg_status50->description, copy_len);
       tbuf2[copy_len]='\0';
@@ -509,11 +517,11 @@ else if ((gg->type == GG_STATUS50_CMD) && FROM_SERVER("gg", PACKET)) {
                                  gg_status50->remote_port);
 }
 else if (gg->type == GG_STATUS60_CMD) {
-      gg_get_status(gg_status60->status,tbuf);
-      gg_get_version(gg_status60->version,tbuf3);
+      gg_get_status(gg_status60->status, tbuf, GG_TBUF_SIZE);
+      gg_get_version(gg_status60->version, tbuf3, GG_TBUF3_SIZE);
       size_t offset=14;
       if (gg->len < offset)
-          return NULL;
+          GG_BAIL();
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
       strncpy(tbuf2,gg_status60->description, copy_len);
       tbuf2[copy_len]='\0';
@@ -528,12 +536,12 @@ else if (gg->type == GG_STATUS60_CMD) {
                                  gg_status60->remote_port);
 }
 else if (gg->type == GG_STATUS70_CMD) {
-      gg_get_status(gg_status70->status,tbuf);
+      gg_get_status(gg_status70->status, tbuf, GG_TBUF_SIZE);
       size_t offset=18;
       if (gg->len < offset)
-          return NULL;
+          GG_BAIL();
       size_t copy_len = MIN(gg->len - offset, GG_MAX_LEN);
-      gg_get_version(gg_status70->version,tbuf3);
+      gg_get_version(gg_status70->version, tbuf3, GG_TBUF3_SIZE);
       strncpy(tbuf2,gg_status70->description, copy_len);
       tbuf2[copy_len]='\0';
       DISSECT_MSG("GG7 : %s:%d -> %s:%d - STATUS CHANGED  UIN: %u  STATUS: %s (%s)  VERSION: %s  RIP: %u.%u.%u.%u:%u\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
@@ -564,133 +572,147 @@ else {
    return NULL;
 }
 
-void gg_get_status(u_int32 status, char *str)  {
+void gg_get_status(u_int32 status, char *str, size_t size)  {
+   char buf[128];
+
+   buf[0] = '\0';
 
 switch ((status&0x00ff)) {
 
 case 0x0014:
-   strcpy(str,"invisible");
+   strcpy(buf,"invisible");
    break;
 
 case 0x0002:
-   strcpy(str,"available");
+   strcpy(buf,"available");
    break;
 
 case 0x0003:
-   strcpy(str,"busy");
+   strcpy(buf,"busy");
    break;
 
 case 0x0006:
-   strcpy(str,"blocked");
+   strcpy(buf,"blocked");
    break;
 
 case 0x0001:
-   strcpy(str,"not available");
+   strcpy(buf,"not available");
    break;
 
 case 0x0016:
-   strcpy(str,"invisible + descr");
+   strcpy(buf,"invisible + descr");
    break;
 
 case 0x0004:
-   strcpy(str,"available + descr");
+   strcpy(buf,"available + descr");
    break;
 
 case 0x0005:
-   strcpy(str,"busy + descr");
+   strcpy(buf,"busy + descr");
    break;
 
 case 0x0015:
-   strcpy(str,"not available + descr");
+   strcpy(buf,"not available + descr");
    break;
 
 default:
-   strcpy(str,"unknown");
+   strcpy(buf,"unknown");
 }
 
 if ((status&0xff00)==0x8000)
-   strcat(str," + private");
+   strcat(buf," + private");
+
+/* GHSA-vrjv-f8gv-2h35: the helper composes into an ample private buffer
+ * and only ever hands the caller a bounded copy */
+snprintf(str, size, "%s", buf);
 
 }
 
-void gg_get_version(u_int32 version, char *str)  {
+void gg_get_version(u_int32 version, char *str, size_t size)  {
+   char buf[128];
+
+   buf[0] = '\0';
 
 switch ((version&0x00ff)) {
 
 case 0x0000002A:
-   strcpy(str,"7.7");
+   strcpy(buf,"7.7");
    break;
 
 case 0x00000029:
-   strcpy(str,"7.6");
+   strcpy(buf,"7.6");
    break;
 
 case 0x00000024:
-   strcpy(str,"6.1/7.6");
+   strcpy(buf,"6.1/7.6");
    break;
 
 case 0x00000028:
-   strcpy(str,"7.5");
+   strcpy(buf,"7.5");
    break;
 
 case 0x00000027:
 case 0x00000026:
 case 0x00000025:
-   strcpy(str,"7.0");
+   strcpy(buf,"7.0");
    break;
 
 case 0x00000022:
 case 0x00000021:
 case 0x00000020:
-   strcpy(str,"6.0");
+   strcpy(buf,"6.0");
    break;
 
 case 0x0000001E:
 case 0x0000001C:
-   strcpy(str,"5.7");
+   strcpy(buf,"5.7");
    break;
 
 case 0x0000001B:
 case 0x00000019:
-   strcpy(str,"5.0");
+   strcpy(buf,"5.0");
    break;
 
 case 0x00000018:
-   strcpy(str,"5.0/4.9");
+   strcpy(buf,"5.0/4.9");
    break;
 
 case 0x00000017:
 case 0x00000016:
-   strcpy(str,"4.9");
+   strcpy(buf,"4.9");
    break;
 
 case 0x00000015:
 case 0x00000014:
-   strcpy(str,"4.8");
+   strcpy(buf,"4.8");
    break;
 
 case 0x00000011:
-   strcpy(str,"4.6");
+   strcpy(buf,"4.6");
    break;
 
 case 0x00000010:
 case 0x0000000f:
-   strcpy(str,"4.5");
+   strcpy(buf,"4.5");
    break;
 
 case 0x0000000b:
-   strcpy(str,"4.0");
+   strcpy(buf,"4.0");
    break;
 
 default:
-   sprintf(str,"unknown (0x%X)",version);
+   sprintf(buf,"unknown (0x%X)",version);
 }
 
 if ((version&0xf0000000)==0x40000000)
-   strcat(str," + has audio");
+   strcat(buf," + has audio");
 
 if ((version&0x0f000000)== 0x04000000)
-   strcat(str," + eraomnix");
+   strcat(buf," + eraomnix");
+
+/* GHSA-vrjv-f8gv-2h35: the helper composes into an ample private buffer
+ * and only ever hands the caller a bounded copy */
+snprintf(str, size, "%s", buf);
 
 }
 

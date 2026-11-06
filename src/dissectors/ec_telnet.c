@@ -151,7 +151,13 @@ FUNC_DECODER(dissector_telnet)
             stringlen = strlen((const char*)str);
             for (p = str, i = 0; i < stringlen; i++) {
                if (str[i] == '\b' || str[i] == 0x7f) {
-                  p--;
+                  /*
+                   * GHSA-w5ch-7c4x-crcc: a backspace arriving before any
+                   * printable character used to walk p below str, after which
+                   * this loop wrote attacker-chosen bytes underneath the VLA.
+                   */
+                  if (p > str)
+                     p--;
                } else {
                   *p = str[i];
                   p++;  

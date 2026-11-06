@@ -176,6 +176,8 @@ void inject_split_data(struct packet_object *po)
       po->DATA.inject_len = po->DATA.len - max_len;
       po->DATA.delta -= po->DATA.len - max_len;
       po->DATA.len = max_len;
+      /* mark it modified so decode_ip/tcp update tot_len/seq/checksums */
+      po->flags |= PO_MODIFIED;
    } 
 }
 

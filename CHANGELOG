@@ -4,6 +4,22 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
+0.8.5-Beccaria    20261110
+   !! Fix seven memory-safety bugs reachable from network traffic (CVE-2026-125400 .. CVE-2026-125406) reported by the DREAM Security Research Team
+   !! Fix potential buffer overflow when extracting fields in scan_load_hosts()
+   !! Fix double-free by implicit interface or early termination
+   !! Fix heap buffer overflow in GG Dissector, thanks to <dapickle> for the bug report and fix (Closes: #1306)
+   !! Fix filter regression while keeping (CVE-2026-3606) fixed
+   !! Fix URL-decode HTTP Basic Auth base64 token before decoding (#943)
+   !! Allow ARP poisoning in silent mode without a pre-built hosts list (#1239)
+   !! Fix issues #1201, #709, #1087, and #899 (#1319)
+   !! Drop real UID/GID so GTK's bubblewrap/glycin image loaders can run (#1310, #1338)
+   !! Fix numerous new gcc warnings (const, calloc args, unterminated strings, always-false comparisons)
+   !! Fix curl compatibility and deprecation warnings in sslstrip
+   ++ Add GTK4 + libadwaita interface (GTK_BUILD_TYPE=GTK4)
+   ++ Restore interface picker and Options menu on the GTK4 setup screen
+   ++ Update test_ec_decode to use ck_assert_msg for recent compiler compatibility
+=========================================
 0.8.4.1-Garofalo    20260407
    !! Fix heap-out-of-bounds read issue in etterfilter (CVE-2026-3606)
 =========================================

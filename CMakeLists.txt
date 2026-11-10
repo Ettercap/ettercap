@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(ettercap C)
 
-set(VERSION "0.8.5")
+set(VERSION "0.8.5.1")
 
 include(GNUInstallDirs)
 

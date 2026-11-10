@@ -4,6 +4,9 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
+0.8.5.1-Beccaria    20261110
+   !! Fix ec_version.h and desktop/ettercap.metainfo.xml version strings for the 0.8.5.1 hotfix
+=========================================
 0.8.5-Beccaria    20261110
    !! Fix seven memory-safety bugs reachable from network traffic (CVE-2026-125400 .. CVE-2026-125406) reported by the DREAM Security Research Team
    !! Fix potential buffer overflow when extracting fields in scan_load_hosts()

@@ -43,6 +43,7 @@
 #cmakedefine HAVE_MEMMEM
 #cmakedefine HAVE_MEMRCHR
 #cmakedefine HAVE_BASENAME
+#cmakedefine HAVE_SETRESUID
 
 #cmakedefine HAVE_NCURSES
 #cmakedefine HAVE_GTK

@@ -233,6 +233,7 @@ check_function_exists(memmem HAVE_MEMMEM)
 check_function_exists(memrchr HAVE_MEMRCHR)
 check_function_exists(basename HAVE_BASENAME)
 check_function_exists(strndup HAVE_STRNDUP)
+check_function_exists(setresuid HAVE_SETRESUID)
 
 find_library(HAVE_PCAP pcap)
 if(HAVE_PCAP)

@@ -28,6 +28,7 @@
    #define _REENTRANT      /* for strtok_r() */
 #endif
 #include <string.h>
+#include <unistd.h>        /* for setresuid() and setresgid() */
 #if defined (__USE_GNU)
    #undef __USE_GNU
 #endif
@@ -35,7 +36,6 @@
    #undef _GNU_SOURCE
 #endif
 #include <strings.h>
-#include <unistd.h>
 #include <time.h>
 
 /*

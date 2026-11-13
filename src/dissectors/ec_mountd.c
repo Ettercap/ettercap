@@ -52,13 +52,13 @@ FUNC_DECODER(dissector_mountd)
 {
    DECLARE_DISP_PTR_END(ptr, end);
    u_int32 type, xid, proc, program, version, flen, cred, offs, i;
+   size_t left;
    mountd_session *pe;
    struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* don't complain about unused var */
-   (void)end;
    (void) DECODE_DATA; 
    (void) DECODE_DATALEN;
    (void) DECODED_LEN;
@@ -73,11 +73,21 @@ FUNC_DECODER(dissector_mountd)
    if (PACKET->L4.proto == NL_TYPE_TCP)
       ptr += 4;
 
+   /*
+    * Every offset and length below comes from the packet, so each read is
+    * checked against the bytes left after the TCP record mark.
+    */
+   left = (size_t)(end - ptr);
+
    xid  = pntol(ptr);
    type = pntol(ptr + 4);
 
    /* CALL */
    if (FROM_CLIENT("mountd", PACKET)) {
+
+      /* fixed header, credential and verifier headers, dirpath length */
+      if (left < 44)
+         return NULL;
 
       program = pntol(ptr + 12);
       version = pntol(ptr + 16);
@@ -88,10 +98,10 @@ FUNC_DECODER(dissector_mountd)
 
       /* Take remote dir (with some checks) */	
       cred = pntol(ptr + 28);
-      if (cred > PACKET->DATA.len)
+      if (cred > left - 44)
          return NULL;
       flen  = pntol(ptr + 40 + cred);
-      if (flen > 100)
+      if (flen > 100 || flen > left - 44 - cred)
          return NULL;
 	 
       dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_mountd));
@@ -119,11 +129,13 @@ FUNC_DECODER(dissector_mountd)
    PACKET->DISSECTOR.banner = strdup("mountd");
 
    /* Unsuccess or not a reply */
-   if (!pe || !(pe->rem_dir) || pe->xid != xid || pntol(ptr + 24) != 0 || type != 1) 
+   if (!pe || !(pe->rem_dir) || pe->xid != xid || left < 28 || pntol(ptr + 24) != 0 || type != 1) 
       return NULL;
 
    /* Take the handle */
    if (pe->ver == 3) {
+      if (left < 32)
+         return NULL;
       flen = pntol(ptr + 28);
       if (flen > 64) 
          flen = 64;
@@ -132,6 +144,9 @@ FUNC_DECODER(dissector_mountd)
       flen = 32;
       offs = 28;
    }
+
+   if (flen > left - offs)
+      flen = left - offs;
 
    DISSECT_MSG("mountd : Server:%s Handle %s: [ ",
          ip_addr_ntoa(&PACKET->L3.src, tmp), pe->rem_dir);

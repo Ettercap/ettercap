@@ -197,7 +197,7 @@ FUNC_DECODER(dissector_ssh)
       /* If we are ready to decrypt packets */
       if (session_data->status == WAITING_ENCRYPTED_PCK) {
          u_char direction, *crypted_packet = NULL, *clear_packet = NULL;
-         u_int32 data_len;
+         u_int32 data_len, payload_len;
 	 
          /* Check what key and stream buffer we have to use */	 
          if(FROM_SERVER("ssh", PACKET))
@@ -216,8 +216,11 @@ FUNC_DECODER(dissector_ssh)
             ssh_len = pntol(crypted_packet);
             ssh_mod = 8 - (ssh_len % 8);
 
-            /* SAFE_CALLOC is too drastic for errors */
-            if (ssh_len > INT16_MAX) {
+            /* SAFE_CALLOC is too drastic for errors.
+             * GHSA-jrh2-m4f5-q3g3: below 5 bytes there is no room for the
+             * packet type and data_len, both of which are read unconditionally.
+             */
+            if (ssh_len < 5 || ssh_len > INT16_MAX) {
                SAFE_FREE(crypted_packet);
                return NULL;
             }
@@ -241,9 +244,19 @@ FUNC_DECODER(dissector_ssh)
             data_len = pntol(ptr);
             ptr += 4;
 
+            /* GHSA-jrh2-m4f5-q3g3: data_len comes from the peer and has to fit
+             * in what is left after the packet type and data_len itself.
+             */
+            payload_len = ssh_len - 5;
+
             /* USER */
             if (ssh_packet_type == CMSG_USER) {
                DEBUG_MSG("\tDissector_ssh USER");
+               if (data_len > payload_len) {
+                  SAFE_FREE(clear_packet);
+                  SAFE_FREE(crypted_packet);
+                  return NULL;
+               }
                /* User will always be NULL terminated 
                 * (it's calloc'd MAX_USER_LEN + 1)
                 */
@@ -253,7 +266,7 @@ FUNC_DECODER(dissector_ssh)
             } else if (ssh_packet_type == CMSG_AUTH_PASSWORD) {
                DEBUG_MSG("\tDissector_ssh PASS");
                /* avoid bof */
-               if (data_len > MAX_USER_LEN) {
+               if (data_len > MAX_USER_LEN || data_len > payload_len) {
                   SAFE_FREE(clear_packet);	 
                   SAFE_FREE(crypted_packet);
                   return NULL;
@@ -308,7 +321,7 @@ FUNC_DECODER(dissector_ssh)
                u_char *temp_disp_data;
 
                /* Avoid int overflow or bogus data_len (realloc is too optimistic) */
-               if ((PACKET->DATA.disp_len + data_len + 1 < PACKET->DATA.disp_len) || (data_len > ssh_len)) {
+               if ((PACKET->DATA.disp_len + data_len + 1 < PACKET->DATA.disp_len) || (data_len > payload_len)) {
                   SAFE_FREE(clear_packet);	 
                   SAFE_FREE(crypted_packet);
                   return NULL;

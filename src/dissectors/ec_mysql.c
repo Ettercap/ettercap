@@ -134,9 +134,19 @@ FUNC_DECODER(dissector_mysql)
             ptr += 5; /* skip over Packet Length +  Packet Number + protocol_version*/
             length = strlen((const char*)ptr);
             ptr += (length +  1 + 4); /* skip over Version + Thread ID */
+            /* GHSA-r2hv-j478-3cfg: both seed copies have to fit in
+             * what is left of the packet.
+             */
+            if (end - ptr < 8 + 1 + 2 + 1 + 2 + 13 + 12) {
+               SAFE_FREE(ident);
+               SAFE_FREE(s);
+               return NULL;
+            }
             s->data = malloc(41);
            if (s->data == NULL) { /* oops, couldn't get memory */
                DEBUG_MSG("\tUnable to allocate memory in Dissector...");
+               SAFE_FREE(ident);
+               SAFE_FREE(s);
                return NULL;
            }
             memcpy(seed, ptr, 8);
@@ -154,12 +164,20 @@ FUNC_DECODER(dissector_mysql)
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          if(!s->flag) {
             DEBUG_MSG("\tDissector_mysq DUMP ENCRYPTED");
+            /* GHSA-r2hv-j478-3cfg: the user and the encrypted password
+             * both have to fit in what is left of the packet.
+             */
+            if (end - ptr < 36) {
+               PACKET->DISSECTOR.user = strdup("");
+               PACKET->DISSECTOR.pass = strdup("No Password!!!");
+            }
+            else {
             /* Reach and save the username */
             ptr += 36;
             PACKET->DISSECTOR.user = strdup((const char*)ptr);
             /* Reach the encrypted password */
             ptr += (strlen(PACKET->DISSECTOR.user) + 1 + 1);
-            if(ptr < end) {
+            if(end - ptr >= 20) {
                memcpy(input, ptr, 20);
                hex_encode(input, 20, output);
                output[40] = 0;
@@ -170,6 +188,7 @@ FUNC_DECODER(dissector_mysql)
             }
             else {
                PACKET->DISSECTOR.pass = strdup("No Password!!!");
+            }
             }
             DISSECT_MSG("MYSQL : %s:%d -> USER:%s %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                             ntohs(PACKET->L4.dst),

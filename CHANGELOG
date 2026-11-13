@@ -5,6 +5,7 @@ Legend:
          !! bug fixed
 =========================================
 0.8.5.1-Beccaria    20261110
+   !! Fix heap out-of-bounds reads in the mountd dissector (unchecked cred/flen, handle dump)
    !! Fix ec_version.h and desktop/ettercap.metainfo.xml version strings for the 0.8.5.1 hotfix
 =========================================
 0.8.5-Beccaria    20261110

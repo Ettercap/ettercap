@@ -28,6 +28,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#ifndef OS_WINDOWS
+   #include <sys/wait.h>
+#endif
 
 /* protos */
 
@@ -110,6 +113,7 @@ static void remote_browser(struct packet_object *po)
    char *command;
    char **param = NULL;
    int i = 0, k = 0;
+   pid_t child_pid;
    
    /* the client is making a request */
    if (po->DATA.disp_len != 0 && strstr((const char*)po->DATA.disp_data, "GET")) {
@@ -162,8 +166,22 @@ static void remote_browser(struct packet_object *po)
       /* NULL terminate the array */
       SAFE_REALLOC(param, (i + 1) * sizeof(char *));
       param[i] = NULL;
-      /* execute the script */ 
-      if (fork() == 0) {
+      /* execute the script */
+      /*
+       * use a double-fork so the browser (a long-running child we must not
+       * wait for) is reparented to init (PID 1) and reaped by it. The parent
+       * only waits for the short-lived intermediate child by its specific
+       * PID below. This avoids relying on a global SIGCHLD reaper, which
+       * would steal child processes spawned by linked libraries such as
+       * GTK/glycin and make their own waitpid() fail with ECHILD.
+       */
+      child_pid = fork();
+      if (child_pid == 0) {
+         pid_t gchild = fork();
+         if (gchild == -1)
+            _exit(-E_INVALID);
+         if (gchild) /* intermediate child: leave, init adopts the grandchild */
+            _exit(0);
          /* chrome won't start as root, changing UID in order to prevent this and for more security in the browser context */
          /* the following line has been commented since some Penetration Testing distros can run only as root */
          /*setuid(1000);*/
@@ -191,7 +209,13 @@ static void remote_browser(struct packet_object *po)
          WARN_MSG("Cannot launch the default browser (command: %s), please edit your etter.conf file and put a valid value in remote_browser field\n", EC_GBL_CONF->remote_browser);
          _exit(-E_INVALID);
       }
-         
+
+      /* parent: reap the short-lived intermediate child by its specific PID */
+#ifndef OS_WINDOWS
+      if (child_pid > 0)
+         waitpid(child_pid, NULL, 0);
+#endif
+
       //to free the char **param
       for(k= 0; k < i; ++k)
     	  SAFE_FREE(param[k]);

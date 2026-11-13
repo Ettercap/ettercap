@@ -180,7 +180,10 @@ FUNC_DECODER(dissector_vnc)
          /* We are waiting for the server challenge */
          if ((conn_status->status == WAIT_CHALLENGE) && (ptr < end)) {
             char buffer[17];
-            if(PACKET->DATA.len >= 16) {
+            /* GHSA-vphc-c3r7-3mh7: DATA.len does not account for the
+             * auth-type bytes already consumed in this packet.
+             */
+            if(end - ptr >= 16) {
                memcpy(buffer, ptr, 16);
                buf[16] = 0;
                /* Saves the server challenge (16byte) in the session data */

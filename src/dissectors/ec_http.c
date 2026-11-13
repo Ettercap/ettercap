@@ -267,6 +267,13 @@ static void http_adjust_content_length(struct packet_object *po)
       return;
    if (!(po->flags & PO_MODIFIED))
       return;
+   /*
+    * already split for injection: the body no longer fits in this
+    * packet, so a single Content-Length rewrite would be wrong, and
+    * re-running inject_split_data() would corrupt DATA.delta.
+    */
+   if (po->DATA.inject != NULL)
+      return;
    if (ntohs(po->L4.src) != 80 && ntohs(po->L4.src) != 8080 && ntohs(po->L4.src) != 443)
       return;
    if (strncasecmp((const char*)po->DATA.data, "HTTP/1.", 7))

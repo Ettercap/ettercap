@@ -40,6 +40,8 @@ static void daemon_init(void);
 static void daemon_cleanup(void);
 static void daemon_msg(const char *msg);
 static void daemon_error(const char *msg);
+static void daemon_input(const char *title, char *input, size_t n, void (*callback)(void));
+static void daemon_update(int target);
 static int daemon_progress(char *title, int value, int max);
 static void daemonize(void);
 
@@ -56,7 +58,9 @@ void set_daemon_interface(void)
    ops.msg = &daemon_msg;
    ops.error = &daemon_error;
    ops.fatal_error = &daemon_error;
+   ops.input = &daemon_input;
    ops.progress = &daemon_progress;
+   ops.update = &daemon_update;
    ops.type = UI_DAEMONIZE;
    
    ui_register(&ops);
@@ -130,6 +134,29 @@ static void daemon_error(const char *msg)
    
    fprintf(stdout, "%s\n", msg);
    
+   return;
+}
+
+/* no input possible in daemon mode */
+
+static void daemon_input(const char *title, char *input, size_t n, void (*callback)(void))
+{
+   (void) title;
+   (void) input;
+   (void) n;
+   (void) callback;
+
+   DEBUG_MSG("daemon_input");
+   return;
+}
+
+/* no UI updates in daemon mode */
+
+static void daemon_update(int target)
+{
+   (void) target;
+
+   DEBUG_MSG("daemon_update");
    return;
 }
 

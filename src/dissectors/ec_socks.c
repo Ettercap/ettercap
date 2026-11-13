@@ -49,10 +49,9 @@ FUNC_DECODER(dissector_socks)
    struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
-   u_int16 d_len; /* We don't want heap overflows :) */
+   u_int16 user_len, pass_len; /* We don't want heap overflows :) */
 
    /* don't complain about unused var */
-   (void)end;
    (void) DECODE_DATA; 
    (void) DECODE_DATALEN;
    (void) DECODED_LEN;
@@ -106,26 +105,31 @@ FUNC_DECODER(dissector_socks)
             DISSECT_MSG("SOCKS5 : %s:%d -> No Auth Required\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                              ntohs(PACKET->L4.dst));                             
          } else { /* User/pass */
-            
-            /* Username len */
-            d_len = *(++ptr);
-	 
-            /* Save the username (take care of the null termination) */
-            SAFE_CALLOC(PACKET->DISSECTOR.user, d_len + 1, sizeof(char));
-            memcpy(PACKET->DISSECTOR.user, ++ptr, d_len);
-	 
-            /* Reach the password */
-            ptr += d_len;
-            d_len = *ptr;
-         
-            /* Save the password (take care of the null termination) */
-            SAFE_CALLOC(PACKET->DISSECTOR.pass, d_len + 1, sizeof(char));
-            memcpy(PACKET->DISSECTOR.pass, ++ptr, d_len);
-         
-            DISSECT_MSG("SOCKS5 : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                         ntohs(PACKET->L4.dst),
-                                                         PACKET->DISSECTOR.user,
-                                                         PACKET->DISSECTOR.pass);
+
+            /*
+             * The layout is: ver | user_len | user | pass_len | pass
+             * Both length bytes are attacker controlled, so make sure
+             * the fields they announce are really inside the packet
+             * before copying them out.
+             */
+            user_len = (ptr + 1 < end) ? (u_int16)ptr[1] : 0;
+            pass_len = (ptr + user_len + 2 < end) ? (u_int16)ptr[user_len + 2] : 0;
+
+            if (ptr + user_len + pass_len + 3 <= end) {
+
+               /* Save the username (take care of the null termination) */
+               SAFE_CALLOC(PACKET->DISSECTOR.user, user_len + 1, sizeof(char));
+               memcpy(PACKET->DISSECTOR.user, ptr + 2, user_len);
+
+               /* Save the password (take care of the null termination) */
+               SAFE_CALLOC(PACKET->DISSECTOR.pass, pass_len + 1, sizeof(char));
+               memcpy(PACKET->DISSECTOR.pass, ptr + user_len + 3, pass_len);
+
+               DISSECT_MSG("SOCKS5 : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                            ntohs(PACKET->L4.dst),
+                                                            PACKET->DISSECTOR.user,
+                                                            PACKET->DISSECTOR.pass);
+            }
          }
 	 
          dissect_wipe_session(PACKET, DISSECT_CODE(dissector_socks));

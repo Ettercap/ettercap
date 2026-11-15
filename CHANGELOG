@@ -20,6 +20,7 @@ Legend:
    !! Drop real UID/GID so GTK's bubblewrap/glycin image loaders can run (#1310, #1338)
    !! Fix numerous new gcc warnings (const, calloc args, unterminated strings, always-false comparisons)
    !! Fix curl compatibility and deprecation warnings in sslstrip
+   !! Fix curses widgets drawing onto stdscr and wiping the screen
    ++ Add GTK4 + libadwaita interface (GTK_BUILD_TYPE=GTK4)
    ++ Restore interface picker and Options menu on the GTK4 setup screen
    ++ Update test_ec_decode to use ck_assert_msg for recent compiler compatibility

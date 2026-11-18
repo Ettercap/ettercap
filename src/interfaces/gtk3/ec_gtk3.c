@@ -1369,7 +1369,12 @@ static void gtkui_file_open(GSimpleAction *action, GVariant *value, gpointer dat
 static void read_pcapfile(gchar *file)
 {
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
-   
+
+   if (file == NULL) {
+      ui_error("Please select a PCAP file");
+      return;
+   }
+
    DEBUG_MSG("read_pcapfile %s", file);
    
    SAFE_CALLOC(EC_GBL_OPTIONS->pcapfile_in, strlen(file)+1, sizeof(char));

@@ -222,7 +222,12 @@ char* capture_default_if(void)
 int is_pcap_file(char *file, char *pcap_errbuf)
 {
    pcap_t *pcap;
-   
+
+   if (file == NULL) {
+      snprintf(pcap_errbuf, PCAP_ERRBUF_SIZE, "No PCAP file specified");
+      return -E_INVALID;
+   }
+
    pcap = pcap_open_offline(file, pcap_errbuf);
    if (pcap == NULL)
       return -E_INVALID;

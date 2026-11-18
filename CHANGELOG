@@ -4,6 +4,17 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
+0.8.5.2-Beccaria    20261112
+   !! Fix five heap out-of-bounds reads in the SOCKS5, mountd, SSHv1, MySQL and VNC dissectors reported by stilwel (CVE-2026-129431, CVE-2026-129432, CVE-2026-131853 .. CVE-2026-131855)
+   !! Fix GTK GUI crash by not reaping children ettercap doesn't own (#1310)
+   !! Fix segmentation fault after ignoring to select a PCAP file in the GUI
+   !! Fix daemon mode crash by setting all ui_ops callbacks (#719)
+   !! Fix 'Message too long' forwarding when a filter expansion splits a packet (#1271, #1179)
+   !! Update HTTP Content-Length for single-packet filter rewrites (#139)
+   !! gtk4: setup logo, tab-view background logo and progress dialog fixes
+   ++ Filter language: DATA.len/DECODED.len and manual checksum override (#1224, #649)
+   ++ Filter language: mod()/random() and --no-filters (#714, #1232)
+=========================================
 0.8.5.1-Beccaria    20261110
    !! Fix heap out-of-bounds reads in the mountd dissector (unchecked cred/flen, handle dump)
    !! Fix ec_version.h and desktop/ettercap.metainfo.xml version strings for the 0.8.5.1 hotfix
